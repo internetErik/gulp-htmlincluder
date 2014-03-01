@@ -1,8 +1,8 @@
 
 {
   "name": "gulp-htmlincluder",
-  "version": "0.0.0",
-  "description": "A plugin for Gulp",
+  "version": "0.0.1",
+  "description": "Gulp plugin for building HTML files into each other.  Made for a workflow involving responsive unit testing.",
   "keywords": [
     "gulpplugin"
   ],
@@ -10,7 +10,7 @@
   "bugs": "https://github.com/internetErik/gulp-htmlincluder/issues",
   "author": {
     "name": "Erik Christianson",
-    "email": "",
+    "email": "internet.erik@gmail.com",
     "url": "https://github.com/internetErik"
   },
   "main": "./index.js",
