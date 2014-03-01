@@ -1,40 +1,170 @@
-(PLUGIN AUTHOR: Please read [Plugin README conventions](https://github.com/wearefractal/gulp/wiki/Plugin-README-Conventions), then delete this line)
 
 # gulp-htmlincluder
-[![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url]  [![Coverage Status](coveralls-image)](coveralls-url) [![Dependency Status][depstat-image]][depstat-url]
+[![NPM version][npm-image]][npm-url]  [![Dependency Status][depstat-image]][depstat-url]
 
 > htmlincluder plugin for [gulp](https://github.com/wearefractal/gulp)
 
+## Introduction
+
+htmlincluder allows you to break your html files into sepparate modules that can be tested on their own, and then built together.  
+
+htmlincluder looks through your files for special html comments that it will use to parse them and do the insertions correctly.
+
 ## Usage
 
-First, install `gulp-htmlincluder` as a development dependency:
 
+### Install
 ```shell
 npm install --save-dev gulp-htmlincluder
 ```
 
+### Sample `gulpfile.js`
 Then, add it to your `gulpfile.js`:
 
 ```javascript
-var htmlincluder = require("gulp-htmlincluder");
+var gulp = require('gulp'),
+	includer = require('gulp-htmlincluder');
 
-gulp.src("./src/*.ext")
-	.pipe(htmlincluder({
-		msg: "Hello Gulp!"
-	}))
-	.pipe(gulp.dest("./dist"));
+gulp.task('htmlIncluder', function() {
+    gulp.src('files/*.html')
+    	.pipe(includer())
+        .pipe(gulp.dest('dist/'));
+});
+
+
+gulp.task('default', ['htmlIncluder']);
+
+
+gulp.task('watch', function() {
+    gulp.watch(['files/*.html'], function(event) {
+      gulp.start('default');
+    });
+});
 ```
 
 ## API
 
-### htmlincluder(options)
+### File naming convention
+htmlincluder requires files follow a particular naming convention.
 
-#### options.msg
-Type: `String`  
-Default: `Hello World`
+Files that you want to include in other files begin with `-`.
 
-The message you wish to attach to file.
+Files that you want to wrap around other files begin with `_`.
 
+Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
+
+### Insert
+This is the simplest use case.  Simply put the following html comment
+
+`<!--#insert file="filename" -->`
+
+#### Example
+
+`file1.html`
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#insert file="-file2.html" -->
+</body>
+</html>
+```
+
+`-file2.html`
+```html
+  hello world
+```
+
+Results
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  hello world
+</body>
+</html>
+```
+
+### Wrap
+`<!--#wrap file="filename" -->`
+AND
+`<!--#endwrap file="filename" -->`
+
+The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
+`<!--#middle -->`
+
+#### Example
+
+`file1.html`
+```html
+<!--#wrap file="_file2.html" -->
+  hello world
+<!--#endwrap file="_file2.html" -->
+```
+
+`_file2.html`
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#middle -->
+</body>
+</html>
+```
+
+Results:
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  hello world
+</body>
+</html>
+```
+
+### Clip tops and bottoms off of files
+`<!--#clipabove -->`
+
+`<!--#clipbelow -->`
+
+#### Example
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#clipbefore -->
+blah
+<!--#clipafter -->
+</body>
+</html>
+```
+
+Results:
+```html
+blah
+```
+
+## More Complicated Examples
 
 ## License
 
