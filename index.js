@@ -6,7 +6,7 @@ module.exports = function (param) {
 	"use strict";
 
 	function htmlincluder() {
-		
+		includer.buildHtml();
 	}
 
 	function aggregateFiles(file, enc, callback) {
@@ -30,6 +30,6 @@ module.exports = function (param) {
 
 		return callback();
 	}
-	console.log(includer);
+	
 	return through.obj(aggregateFiles, htmlincluder);
 };
