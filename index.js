@@ -4,13 +4,20 @@ var through = require("through2"),
 
 module.exports = function (param) {
 	"use strict";
+	var that;
 
 	function htmlincluder() {
-		includer.buildHtml();
+		includer.buildHtml(function(file) {
+			var f = file.file;
+			f.contents = new Buffer(file.content);
+
+    		that.push(f);
+		});
 	}
 
 	function aggregateFiles(file, enc, callback) {
-		var filename = "";
+
+		that = this; //defined in scope of module
 
 		// Do nothing if no contents
 		if (file.isNull()) {
@@ -30,6 +37,6 @@ module.exports = function (param) {
 
 		return callback();
 	}
-	
+
 	return through.obj(aggregateFiles, htmlincluder);
 };

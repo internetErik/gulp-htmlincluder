@@ -1,5 +1,3 @@
-# !!!work in progress!!!
-# !!!not completely working!!!
 # gulp-htmlincluder
 [![NPM version][npm-image]][npm-url]  [![Dependency Status][depstat-image]][depstat-url]
 
