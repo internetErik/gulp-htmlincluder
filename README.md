@@ -138,9 +138,9 @@ Results:
 ```
 
 ### Clip tops and bottoms off of files
-`<!--#clipabove -->`
+`<!--#clipbefore -->`
 
-`<!--#clipbelow -->`
+`<!--#clipafter -->`
 
 #### Example
 ```html
