@@ -163,6 +163,44 @@ Results:
 blah
 ```
 
+### Clip between
+`<!--#clipbetween -->`
+
+`<!--#endclipbetween -->`
+
+#### Example
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+something
+<!--#clipbetween -->
+a widget!
+<!--#endclipbetween -->
+something else
+</body>
+</html>
+```
+
+Results:
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+something
+something else
+</body>
+</html>
+```
+
 ## More Complicated Examples
 
 ## License
