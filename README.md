@@ -42,11 +42,11 @@ gulp.task('watch', function() {
 ## API
 
 ### File naming convention
-htmlincluder requires files follow a particular naming convention.
+ gulp-html-ssi requires files follow a particular naming convention.
 
 Files that you want to include in other files begin with `_`.
 
-Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
+Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `_`.
 
 ### Include
 This is the simplest use case.  Simply put the following html comment
@@ -68,12 +68,12 @@ or
   <title>Document</title>
 </head>
 <body>
-<!--#include file="file2.html" -->
+<!--#include file="__file2.html" -->
 </body>
 </html>
 ```
 
-`-file2.html`
+`__file2.html`
 ```html
   hello world
 ```
