@@ -1,7 +1,7 @@
 # gulp-html-ssi
 [![NPM version][npm-image]][npm-url]  [![Dependency Status][depstat-image]][depstat-url]
 
-> htmlincluder plugin for [gulp](https://github.com/wearefractal/gulp)
+> gulp-html-ssi plugin for [gulp](https://github.com/wearefractal/gulp)
 
 ## Introduction
 
