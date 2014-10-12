@@ -7,7 +7,7 @@
 
 htmlincluder allows you to break your html files into sepparate modules that can be tested on their own, and then built together.  
 
-htmlincluder looks through your files for special html comments that it will use to parse them and do the insertions correctly.
+htmlincluder looks through your files for special html comments that it will use to parse them and do the include correctly.
 
 ## Usage
 
@@ -52,10 +52,10 @@ Files that you want to wrap around other files begin with `_`.
 
 Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
 
-### Insert
+### Include
 This is the simplest use case.  Simply put the following html comment
 
-`<!--#insert file="filename" -->`
+`<!--#include file="filename" -->`
 
 #### Example
 
@@ -68,7 +68,7 @@ This is the simplest use case.  Simply put the following html comment
   <title>Document</title>
 </head>
 <body>
-<!--#insert file="-file2.html" -->
+<!--#include file="-file2.html" -->
 </body>
 </html>
 ```
