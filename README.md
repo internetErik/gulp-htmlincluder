@@ -41,6 +41,13 @@ gulp.task('watch', function() {
 
 ## API
 
+### File naming convention
+htmlincluder requires files follow a particular naming convention.
+
+Files that you want to include in other files begin with `_`.
+
+Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
+
 ### Include
 This is the simplest use case.  Simply put the following html comment
 
