@@ -92,6 +92,34 @@ Results
 </html>
 ```
 
+#### Configure insert to use other text
+
+If you want to use ssi includes along with this, and so have the insert string follow that format there is an arguemtn to pass into the htmlincluder in gulp. 
+
+Thanks to theSLY for suggesting this!
+
+```javascript
+var gulp = require('gulp'),
+  includer = require('gulp-htmlincluder');
+
+gulp.task('htmlIncluder', function() {
+    gulp.src('files/*.html')
+//now looks for &lt;!--#include virtual, instead of &lt;!--#insert  
+      .pipe(includer('include virtual')) 
+      .pipe(gulp.dest('dist/'));
+});
+
+
+gulp.task('default', ['htmlIncluder']);
+
+
+gulp.task('watch', function() {
+    gulp.watch(['files/*.html'], function(event) {
+      gulp.start('default');
+    });
+});
+```
+
 ### Wrap
 `<!--#wrap file="filename" -->`
 AND
