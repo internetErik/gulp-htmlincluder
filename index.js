@@ -2,7 +2,11 @@ var through = require("through2"),
 	gutil = require("gulp-util"),
 	includer = require("./lib/htmlincluder");
 
-module.exports = function (param) {
+//
+// @insertText = (optional) the test looked for in order to insert files 
+// 					(this is so ssi includes can be used instead)
+//
+module.exports = function (insertText) {
 	"use strict";
 	var that;
 
@@ -34,7 +38,7 @@ module.exports = function (param) {
 		}
 
 		if (file.isBuffer()) {
-			includer.hashFile(file);
+			includer.hashFile(file, insertText);
 		}
 
 		return callback();
