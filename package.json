@@ -1,22 +1,22 @@
 
 {
-  "name": "gulp-htmlincluder",
-  "version": "0.0.9",
+  "name": "gulp-html-ssi",
+  "version": "0.0.9.1",
   "description": "Gulp plugin for building HTML files into each other.  Made for a workflow involving responsive unit testing.",
   "keywords": [
     "gulpplugin"
   ],
-  "homepage": "https://github.com/internetErik/gulp-htmlincluder",
+  "homepage": "https://github.com/theSLY/gulp-html-ssi",
   "bugs": "https://github.com/internetErik/gulp-htmlincluder/issues",
   "author": {
-    "name": "Erik Christianson",
-    "email": "internet.erik@gmail.com",
-    "url": "https://github.com/internetErik"
+    "name": "Erik Christianson, Sergei Lepyokhin",
+    "email": "slydot@gmail.com",
+    "url": "https://github.com/theSLY"
   },
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/internetErik/gulp-htmlincluder.git"
+    "url": "git://github.com/theSLY/gulp-html-ssi.git"
   },
   "scripts": {
     "test": "istanbul test _mocha --report html -- test/*.js --reporter spec",
