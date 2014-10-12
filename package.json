@@ -1,7 +1,7 @@
 
 {
   "name": "gulp-html-ssi",
-  "version": "0.0.9.1",
+  "version": "0.0.91",
   "description": "Gulp plugin for building HTML files into each other.  Made for a workflow involving responsive unit testing.",
   "keywords": [
     "gulpplugin"
