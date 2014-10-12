@@ -25,19 +25,17 @@ var gulp = require('gulp'),
 	includer = require('gulp-html-ssi');
 
 gulp.task('htmlSSI', function() {
-    gulp.src('files/*.html')
-    	.pipe(includer())
-        .pipe(gulp.dest('dist/'));
+	gulp.src('./source/**/*.html')
+		.pipe(includer())
+		.pipe(gulp.dest('./build/'));
 });
-
 
 gulp.task('default', ['htmlSSI']);
 
-
 gulp.task('watch', function() {
-    gulp.watch(['files/*.html'], function(event) {
-      gulp.start('default');
-    });
+	gulp.watch(['./source/**/*.html'], function(event) {
+		gulp.start('default');
+	});
 });
 ```
 
