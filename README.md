@@ -1,20 +1,20 @@
-# gulp-htmlincluder
+# gulp-html-ssi
 [![NPM version][npm-image]][npm-url]  [![Dependency Status][depstat-image]][depstat-url]
 
 > htmlincluder plugin for [gulp](https://github.com/wearefractal/gulp)
 
 ## Introduction
 
-htmlincluder allows you to break your html files into sepparate modules that can be tested on their own, and then built together.  
+gulp-html-ssi allows you to compile your html files with includes.
 
-htmlincluder looks through your files for special html comments that it will use to parse them and do the include correctly.
+gulp-html-ssi looks through your files for special html comments that it will use to parse them and do the include correctly.
 
 ## Usage
 
 
 ### Install
 ```shell
-npm install --save-dev gulp-htmlincluder
+npm install --save-dev gulp-html-ssi
 ```
 
 ### Sample `gulpfile.js`
@@ -22,16 +22,16 @@ Then, add it to your `gulpfile.js`:
 
 ```javascript
 var gulp = require('gulp'),
-	includer = require('gulp-htmlincluder');
+	includer = require('gulp-html-ssi');
 
-gulp.task('htmlIncluder', function() {
+gulp.task('htmlSSI', function() {
     gulp.src('files/*.html')
     	.pipe(includer())
         .pipe(gulp.dest('dist/'));
 });
 
 
-gulp.task('default', ['htmlIncluder']);
+gulp.task('default', ['htmlSSI']);
 
 
 gulp.task('watch', function() {
@@ -43,19 +43,14 @@ gulp.task('watch', function() {
 
 ## API
 
-### File naming convention
-htmlincluder requires files follow a particular naming convention.
-
-Files that you want to include in other files begin with `-`.
-
-Files that you want to wrap around other files begin with `_`.
-
-Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
-
 ### Include
 This is the simplest use case.  Simply put the following html comment
 
 `<!--#include file="filename" -->`
+
+or
+
+`<!--#include virtual="filename" -->`
 
 #### Example
 
@@ -68,7 +63,7 @@ This is the simplest use case.  Simply put the following html comment
   <title>Document</title>
 </head>
 <body>
-<!--#include file="-file2.html" -->
+<!--#include file="file2.html" -->
 </body>
 </html>
 ```
@@ -91,117 +86,6 @@ Results
 </body>
 </html>
 ```
-
-### Wrap
-`<!--#wrap file="filename" -->`
-AND
-`<!--#endwrap file="filename" -->`
-
-The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
-`<!--#middle -->`
-
-#### Example
-
-`file1.html`
-```html
-<!--#wrap file="_file2.html" -->
-  hello world
-<!--#endwrap file="_file2.html" -->
-```
-
-`_file2.html`
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-<!--#middle -->
-</body>
-</html>
-```
-
-Results:
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-  hello world
-</body>
-</html>
-```
-
-### Clip tops and bottoms off of files
-`<!--#clipbefore -->`
-
-`<!--#clipafter -->`
-
-#### Example
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-<!--#clipbefore -->
-blah
-<!--#clipafter -->
-</body>
-</html>
-```
-
-Results:
-```html
-blah
-```
-
-### Clip between
-`<!--#clipbetween -->`
-
-`<!--#endclipbetween -->`
-
-#### Example
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-something
-<!--#clipbetween -->
-a widget!
-<!--#endclipbetween -->
-something else
-</body>
-</html>
-```
-
-Results:
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-something
-something else
-</body>
-</html>
-```
-
-## More Complicated Examples
 
 ## License
 
