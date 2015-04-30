@@ -51,11 +51,11 @@ Files that you want to use to build the resulting static pages can be named howe
 ### Include
 This is the simplest use case.  Simply put the following html comment
 
-`<!--#include file="_filename" -->`
+`<!-- #include file="_filename" -->`
 
 or
 
-`<!--#include virtual="_filename" -->`
+`<!-- #include virtual="_filename" -->`
 
 #### Example
 
@@ -68,7 +68,7 @@ or
   <title>Document</title>
 </head>
 <body>
-<!--#include file="__file2.html" -->
+<!-- #include file="__file2.html" -->
 </body>
 </html>
 ```
