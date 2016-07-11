@@ -43,14 +43,16 @@ gulp.task('watch', function() {
 
 ## API
 
-### File naming convention
-htmlincluder requires files follow a particular naming convention.
+### *File Naming Requirement*
+htmlincluder *requires* files follow a particular naming convention.
 
 Files that you want to include in other files begin with `-`.
 
 Files that you want to wrap around other files begin with `_`.
 
 Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
+
+Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built). Would love a pull request trying this since I'm not sure I'll get around to it soon.
 
 ### Insert
 This is the simplest use case.  Simply put the following html comment
