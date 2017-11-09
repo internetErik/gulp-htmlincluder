@@ -3,14 +3,19 @@
 
 > htmlincluder plugin for [gulp](https://github.com/wearefractal/gulp)
 
-## Introduction
+## What does this do?
 
-htmlincluder allows you to break your html files into sepparate modules that can be tested on their own, and then built together.  
+At it's most basic level, this allows you to build files out of other files by marking up your files in a particular way. It also lets you insert data into these files (from a json object).
 
-htmlincluder looks through your files for special html comments that it will use to parse them and do the insertions correctly.
+## What was this intended to do?
+
+htmlincluder was written with the intention of working on static websites while still allowing for a component based development. It also was intended to let the individual components be testable by themselves by allowing the individual component files to include portions that would be removed on build.
+
+It also can allow the inclusion of some dynamic content into these static sites, as long as you can wrangle said content into a json object and pass it in when you are building.
+
+I'm sure this can be put to a much broader use than originally intended (and may do for a name change at some point, since there is no reason you couldn't include json files into json files, or do other things.)
 
 ## Usage
-
 
 ### Install
 ```shell
@@ -26,12 +31,25 @@ var gulp = require('gulp'),
 
 gulp.task('htmlIncluder', function() {
     gulp.src('files/*.html')
-    	.pipe(includer())
+      .pipe(includer())
         .pipe(gulp.dest('dist/'));
+});
+
+// and example using a json data file
+gulp.task('htmlIncluderJson', function() {
+    var json = require('./input-file.json');
+    var config = {
+      jsonInput    : json,
+    };
+    gulp.src('files/**/*.html')
+      .pipe(includer(config))
+      .pipe(gulp.dest('dist/'));
 });
 
 
 gulp.task('default', ['htmlIncluder']);
+
+gulp.task('includeJson', ['htmlIncluder']);
 
 
 gulp.task('watch', function() {
@@ -57,7 +75,7 @@ Right now this is necessary because the files that will ultimately exist in the 
 ### Insert
 This is the simplest use case.  Simply put the following html comment
 
-`<!--#insert file="filename" -->`
+`<!--#insert path="filename" -->`
 
 #### Example
 
@@ -70,7 +88,7 @@ This is the simplest use case.  Simply put the following html comment
   <title>Document</title>
 </head>
 <body>
-<!--#insert file="-file2.html" -->
+<!--#insert path="-file2.html" -->
 </body>
 </html>
 ```
@@ -96,7 +114,7 @@ Results
 
 #### Configure insert to use other text
 
-If you want to use ssi includes along with this, and so have the insert string follow that format there is an arguemtn to pass into the htmlincluder in gulp. 
+If you want to use ssi includes along with this, and so have the insert string follow that format there is an arguemtn to pass into the htmlincluder in gulp.
 
 Thanks to theSLY for suggesting this!
 
@@ -106,8 +124,8 @@ var gulp = require('gulp'),
 
 gulp.task('htmlIncluder', function() {
     gulp.src('files/*.html')
-//now looks for &lt;!--#include virtual, instead of &lt;!--#insert  
-      .pipe(includer('include virtual')) 
+//now looks for &lt;!--#include virtual, instead of &lt;!--#insert
+      .pipe(includer('include virtual'))
       .pipe(gulp.dest('dist/'));
 });
 
@@ -123,9 +141,9 @@ gulp.task('watch', function() {
 ```
 
 ### Wrap
-`<!--#wrap file="filename" -->`
+`<!--#wrap path="filename" -->`
 AND
-`<!--#endwrap file="filename" -->`
+`<!--#endwrap path="filename" -->`
 
 The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
 `<!--#middle -->`
@@ -134,9 +152,9 @@ The middle tag must be placed in the wrap file so we know where to put the middl
 
 `file1.html`
 ```html
-<!--#wrap file="_file2.html" -->
+<!--#wrap path="_file2.html" -->
   hello world
-<!--#endwrap file="_file2.html" -->
+<!--#endwrap path="_file2.html" -->
 ```
 
 `_file2.html`

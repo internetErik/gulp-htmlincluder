@@ -3,17 +3,19 @@ var through = require("through2"),
 	includer = require("./lib/htmlincluder");
 
 //
-// @insertText = (optional) the test looked for in order to insert files 
+// @options = (optional) options for configuring htmlIncluder
+// options.jsonInput     = a json object used to populate data in files
+// options.insertPattern = the test looked for in order to insert files
 // 					(this is so ssi includes can be used instead)
 //
-module.exports = function (insertText) {
+module.exports = function (options) {
 	"use strict";
 	var that;
 
-	includer.initialize();
+	includer.initialize(options);
 
 	function htmlincluder() {
-		includer.buildHtml(function(file) {
+		includer.buildFileResult(function(file) {
 			var f = file.file;
 			f.contents = new Buffer(file.content);
 
@@ -38,7 +40,7 @@ module.exports = function (insertText) {
 		}
 
 		if (file.isBuffer()) {
-			includer.hashFile(file, insertText);
+			includer.hashFile(file);
 		}
 
 		return callback();
