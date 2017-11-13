@@ -4,9 +4,13 @@ var through = require("through2"),
 
 //
 // @options = (optional) options for configuring htmlIncluder
-// options.jsonInput     = a json object used to populate data in files
-// options.insertPattern = the test looked for in order to insert files
+// options.jsonInput         = A json object used to populate data in files
+// options.insertPattern     = The test looked for in order to insert files
 // 					(this is so ssi includes can be used instead)
+// options.filePathAttribute = the name used for the file pathing for #insert
+// 					and #wrap (default= 'path')
+// options.jsonPathAttribute = the name used for the file pathing for #insert
+// 					, #wrap, #data, #jsonInsert (default= 'jsonPath')
 //
 module.exports = function (options) {
 	"use strict";

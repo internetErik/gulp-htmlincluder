@@ -30,32 +30,32 @@ var gulp = require('gulp'),
 	includer = require('gulp-htmlincluder');
 
 gulp.task('htmlIncluder', function() {
-    gulp.src('files/*.html')
-      .pipe(includer())
-        .pipe(gulp.dest('dist/'));
+  gulp.src('files/*.html')
+    .pipe(includer())
+      .pipe(gulp.dest('dist/'));
 });
 
 // and example using a json data file
 gulp.task('htmlIncluderJson', function() {
-    var json = require('./input-file.json');
-    var config = {
-      jsonInput    : json,
-    };
-    gulp.src('files/**/*.html')
-      .pipe(includer(config))
-      .pipe(gulp.dest('dist/'));
+  var json = require('./input-file.json');
+  var options = {
+    jsonInput    : json,
+  };
+
+  gulp.src('files/*.html')
+    .pipe(includer(options))
+    .pipe(gulp.dest('dist/'));
 });
 
 
 gulp.task('default', ['htmlIncluder']);
 
-gulp.task('includeJson', ['htmlIncluder']);
-
+gulp.task('includeJson', ['htmlIncluderJson']);
 
 gulp.task('watch', function() {
-    gulp.watch(['files/*.html'], function(event) {
-      gulp.start('default');
-    });
+  gulp.watch(['files/*.html'], function(event) {
+    gulp.start('default');
+  });
 });
 ```
 
@@ -123,10 +123,14 @@ var gulp = require('gulp'),
   includer = require('gulp-htmlincluder');
 
 gulp.task('htmlIncluder', function() {
-    gulp.src('files/*.html')
+  var options = {
+    insertPattern: 'include virtual',
+  };
+
+  gulp.src('files/*.html')
 //now looks for &lt;!--#include virtual, instead of &lt;!--#insert
-      .pipe(includer('include virtual'))
-      .pipe(gulp.dest('dist/'));
+    .pipe(includer(options))
+    .pipe(gulp.dest('dist/'));
 });
 
 
@@ -134,9 +138,9 @@ gulp.task('default', ['htmlIncluder']);
 
 
 gulp.task('watch', function() {
-    gulp.watch(['files/*.html'], function(event) {
-      gulp.start('default');
-    });
+  gulp.watch(['files/*.html'], function(event) {
+    gulp.start('default');
+  });
 });
 ```
 
