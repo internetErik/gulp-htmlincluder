@@ -145,6 +145,107 @@ gulp.task('watch', function() {
 });
 ```
 
+### Wrap
+`<!--#wrap path="filename" -->`
+AND
+`<!--#endwrap path="filename" -->`
+
+The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
+`<!--#middle -->`
+
+#### Example
+
+`file1.html`
+```html
+<!--#wrap path="_file2.html" -->
+  hello world
+<!--#endwrap path="_file2.html" -->
+```
+
+`_file2.html`
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#middle -->
+</body>
+</html>
+```
+
+Results:
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  hello world
+</body>
+</html>
+```
+
+### data
+
+Inside of wrap and insert tags that you have used the `jsonPath` attribute on you can use use this tag to print data that has been passed down.
+
+`<!--#data jsonPath="path.to.json" -->`
+
+#### Example
+
+`file1.html`
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#insert path="-insert.html" jsonPath="hello" -->
+</body>
+</html>
+```
+
+`-insert.html`
+```html
+<div>
+  <!--#data jsonPath="world" -->
+</div>
+```
+
+`file.json`
+```json
+  {
+    "hello" : {
+      "world" : "hello world"
+    }
+  }
+```
+
+Results
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    hello world
+  </div>
+</body>
+</html>
+```
+
+
+
 ### jsonInsert
 
 When using a json data file, you can pull data from it directly using this tag.
@@ -190,50 +291,15 @@ Results
 </html>
 ```
 
-### Wrap
-`<!--#wrap path="filename" -->`
-AND
-`<!--#endwrap path="filename" -->`
+#### Inline json objects
 
-The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
-`<!--#middle -->`
+Instead of using the data file, you can provide a raw json object
 
-#### Example
+`<!--#jsonInsert jsonPath="path.to.json" rawJson="{ path: { to: { json: "hello world" } } }" -->`
 
-`file1.html`
-```html
-<!--#wrap path="_file2.html" -->
-  hello world
-<!--#endwrap path="_file2.html" -->
-```
+Results
 
-`_file2.html`
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-<!--#middle -->
-</body>
-</html>
-```
-
-Results:
-```html
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-</head>
-<body>
-  hello world
-</body>
-</html>
-```
+`hello world`
 
 ### Clip tops and bottoms off of files
 `<!--#clipbefore -->`
