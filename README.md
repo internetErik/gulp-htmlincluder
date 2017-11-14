@@ -18,11 +18,13 @@ I'm sure this can be put to a much broader use than originally intended (and may
 ## Usage
 
 ### Install
+
 ```shell
 npm install --save-dev gulp-htmlincluder
 ```
 
 ### Sample `gulpfile.js`
+
 Then, add it to your `gulpfile.js`:
 
 ```javascript
@@ -62,6 +64,7 @@ gulp.task('watch', function() {
 ## API
 
 ### *File Naming Requirement*
+
 htmlincluder *requires* files follow a particular naming convention.
 
 Files that you want to include in other files begin with `-`.
@@ -72,11 +75,51 @@ Files that you want to use to build the resulting static pages can be named howe
 
 Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built). Would love a pull request trying this since I'm not sure I'll get around to it soon.
 
+### Terminology
+
+Basic tag structure
+
+`<!--#tagName attributeName="attributeValue" -->`
+
+### Attributes
+
+#### path
+
+A relative (to current file) path to a file.
+
+#### jsonPath
+
+A path to data in a json object. For example:
+
+```json
+{
+  a: {
+    b: {
+      c: 'hello world'
+    }
+  }
+}
+```
+
+The path to `c` is `a.b.c`.
+
+#### rawJson
+
+A string that contains a json object.
+
+*Warning*
+
+Internally `eval` is used so beware. But also, you could technically write a script that generates an object if you need more complicated data.
+
+For example:
+
+`rawJson="(function(){ return {title: 'generated object?'} })()"`
+
 ### Insert
 
 This is the simplest use case.  Simply put the following html comment
 
-`<!--#insert path="filename" -->`
+`<!--#insert path="filename" jsonPath="" rawJson="" -->`
 
 #### Example
 
@@ -146,11 +189,15 @@ gulp.task('watch', function() {
 ```
 
 ### Wrap
-`<!--#wrap path="filename" -->`
+
+`<!--#wrap path="filename" jsonPath="" rawJson="" -->`
+
 AND
+
 `<!--#endwrap path="filename" -->`
 
 The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
+
 `<!--#middle -->`
 
 #### Example
@@ -194,7 +241,7 @@ Results:
 
 Inside of wrap and insert tags that you have used the `jsonPath` attribute on you can use use this tag to print data that has been passed down.
 
-`<!--#data jsonPath="path.to.json" -->`
+`<!--#data jsonPath="path.to.json" rawJson="" -->`
 
 #### Example
 
@@ -251,7 +298,7 @@ Results
 
 When using a json data file, you can pull data from it directly using this tag.
 
-`<!--#jsonInsert jsonPath="path.to.json" -->`
+`<!--#jsonInsert jsonPath="path.to.json" rawJson="" -->`
 
 #### Example
 
