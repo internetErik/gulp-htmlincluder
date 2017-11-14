@@ -207,6 +207,7 @@ Inside of wrap and insert tags that you have used the `jsonPath` attribute on yo
   <title>Document</title>
 </head>
 <body>
+<!-- JSON path passed down from above -->
 <!--#insert path="-insert.html" jsonPath="hello" -->
 </body>
 </html>
