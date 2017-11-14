@@ -73,6 +73,7 @@ Files that you want to use to build the resulting static pages can be named howe
 Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built). Would love a pull request trying this since I'm not sure I'll get around to it soon.
 
 ### Insert
+
 This is the simplest use case.  Simply put the following html comment
 
 `<!--#insert path="filename" -->`
@@ -142,6 +143,51 @@ gulp.task('watch', function() {
     gulp.start('default');
   });
 });
+```
+
+### jsonInsert
+
+When using a json data file, you can pull data from it directly using this tag.
+
+`<!--#jsonInsert jsonPath="path.to.json" -->`
+
+#### Example
+
+`file1.html`
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+<!--#jsonInsert jsonPath="hello.world" -->
+</body>
+</html>
+```
+
+`file.json`
+```json
+  {
+    "hello" : {
+      "world" : "hello world"
+    }
+  }
+```
+
+Results
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  hello world
+</body>
+</html>
 ```
 
 ### Wrap
