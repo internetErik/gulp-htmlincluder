@@ -81,6 +81,33 @@ Basic tag structure
 
 `<!--#tagName attributeName="attributeValue" -->`
 
+### All Tags
+
+Note: '*' means required attribute
+
+* Wrapping
+  * `<!--#wrap path="*" jsonPath="" rawJson="" -->`
+  * `<!--#middle -->`
+  * `<!--#endwrap -->`
+* Inserting
+  * `<!--#insert path="*" jsonPath="" rawJson="" -->`
+* Inserting Json (passed in from parent component)
+  * `<!--#data jsonPath="*" default="" rawJson="" -->`
+* Inserting Json (from raw or data input)
+  * `<!--#jsonInsert jsonPath="*" rawJson="" -->`
+* Control Flow
+  * If
+    * `<!--#if jsonPath="*" rawJson="" -->`
+    * `<!--#endif -->`
+  * Each (repeater)
+    * `<!--#each count="*" -->`
+    * `<!--#endeach -->`
+* Clipping (Ignores parts of file)
+  * `<!--#clipbefore -->`
+  * `<!--#clipafter -->`
+  * `<!--#clipbetween -->`
+  * `<!--#endclipbetween -->`
+
 ### Attributes
 
 #### path
@@ -115,11 +142,17 @@ For example:
 
 `rawJson="(function(){ return {title: 'generated object?'} })()"`
 
+#### count
+
+On an #each you can tell it how many times to repeat the inner content with a count attribute
+
+`<!--#each count="3" -->hello world<!--#endeach -->
+
 ### Insert
 
 This is the simplest use case.  Simply put the following html comment
 
-`<!--#insert path="filename" jsonPath="" rawJson="" -->`
+`<!--#insert path="<relative-path-to-file.ext>" jsonPath="" rawJson="" -->`
 
 #### Example
 
@@ -190,11 +223,11 @@ gulp.task('watch', function() {
 
 ### Wrap
 
-`<!--#wrap path="filename" jsonPath="" rawJson="" -->`
+`<!--#wrap path="<relative-path-to-file.ext>" jsonPath="" rawJson="" -->`
 
 AND
 
-`<!--#endwrap path="filename" -->`
+`<!--#endwrap -->`
 
 The middle tag must be placed in the wrap file so we know where to put the middle part of the other file
 
@@ -206,7 +239,7 @@ The middle tag must be placed in the wrap file so we know where to put the middl
 ```html
 <!--#wrap path="_file2.html" -->
   hello world
-<!--#endwrap path="_file2.html" -->
+<!--#endwrap -->
 ```
 
 `_file2.html`
@@ -241,7 +274,7 @@ Results:
 
 Inside of wrap and insert tags that you have used the `jsonPath` attribute on you can use use this tag to print data that has been passed down.
 
-`<!--#data jsonPath="path.to.json" rawJson="" -->`
+`<!--#data jsonPath="<path.to.json>" default="some text" rawJson="" -->`
 
 #### Example
 
@@ -292,13 +325,11 @@ Results
 </html>
 ```
 
-
-
 ### jsonInsert
 
 When using a json data file, you can pull data from it directly using this tag.
 
-`<!--#jsonInsert jsonPath="path.to.json" rawJson="" -->`
+`<!--#jsonInsert jsonPath="<path.to.json>" rawJson="" -->`
 
 #### Example
 
