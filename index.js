@@ -12,6 +12,11 @@ var through = require("through2"),
 // options.jsonPathAttribute = the name used for the file pathing for #insert
 // 					, #wrap, #data, #jsonInsert (default= 'jsonPath')
 //
+//
+// options.dev.limitIterations = the number of times processFileWithJsonInput will loop
+// options.dev.printResult = console logs the final output
+// options.dev.printPaths = console logs the output of buildPathFromRelativePath
+//
 module.exports = function (options) {
 	"use strict";
 	var that;
