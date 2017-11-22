@@ -100,7 +100,7 @@ Note: '*' means required attribute
     * `<!--#if jsonPath="*" rawJson="" -->`
     * `<!--#endif -->`
   * Each (repeater)
-    * `<!--#each count="*" -->`
+    * `<!--#each count="*" jsonPath="" rawJson="" -->`
     * `<!--#endeach -->`
 * Clipping (Ignores parts of file)
   * `<!--#clipbefore -->`
@@ -379,6 +379,147 @@ Instead of using the data file, you can provide a raw json object
 Results
 
 `hello world`
+
+### Each
+
+Each can be used to iterate over a json array, or just to repeat some data a number of times.
+
+#### Just with a count
+
+```
+<!--#each jsonPath="this" count="5" -->
+  <div>hello world</div>
+<!--#endeach -->
+```
+
+Results:
+```
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+
+```
+
+#### With an array of values in json input
+
+json input:
+```
+{
+  data : [1, 2, 3, 4]
+}
+```
+
+
+```
+<!--#each jsonPath="data" -->
+  <div><!--#data --></div>
+<!--#endeach -->
+```
+
+Results
+```
+
+  <div>1</div>
+
+  <div>2</div>
+
+  <div>3</div>
+
+  <div>4</div>
+
+
+```
+
+#### With an array of values
+
+
+```
+<!--#each jsonPath="this" rawJson="[1, 2, 3, 4]" -->
+  <div><!--#data --></div>
+<!--#endeach -->
+```
+
+Results
+```
+
+  <div>1</div>
+
+  <div>2</div>
+
+  <div>3</div>
+
+  <div>4</div>
+
+
+```
+
+#### With an array of values, limited by count
+
+
+```
+<!--#each jsonPath="this" rawJson="[1, 2, 3, 4]" count="2" -->
+  <div><!--#data --></div>
+<!--#endeach -->
+```
+
+Results
+```
+
+  <div>1</div>
+
+  <div>2</div>
+
+
+```
+
+
+
+#### With an array of objects
+
+**note: use single quotes in json objects, which means you'll need to escape**
+
+```
+<!--#each jsonPath="this" rawJson="[
+    { name: 'Tom', age: 33, bio: 'Bio for Tom' },
+    { name: 'Dick', age: 55, bio: 'Dick\'s bio' },
+    { name: 'Jane', age: 28, bio: 'Bio for Jane' },
+    { name: 'Harry', age: 27 },
+  ]" -->
+  <div>name: <!--#data jsonPath="name" --></div>
+  <div>age: <!--#data jsonPath="age" --></div>
+  <div>bio: <!--#data jsonPath="bio" default="nothing is known about them" --></div>
+<!--#endeach -->
+```
+
+Results:
+```
+
+  <div>name: Tom</div>
+  <div>age: 33</div>
+  <div>bio: Bio for Tom</div>
+
+  <div>name: Dick</div>
+  <div>age: 55</div>
+  <div>bio: Dick's bio</div>
+
+  <div>name: Jane</div>
+  <div>age: 28</div>
+  <div>bio: Bio for Jane</div>
+
+  <div>name: Harry</div>
+  <div>age: 27</div>
+  <div>bio: nothing is known about them</div>
+
+
+```
 
 ### Clip tops and bottoms off of files
 `<!--#clipbefore -->`
