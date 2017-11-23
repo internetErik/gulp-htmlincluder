@@ -14,6 +14,7 @@ var through = require("through2"),
 //
 //
 // options.dev.limitIterations = the number of times processFileWithJsonInput will loop
+// options.dev.printIterations = console log each processFileWithJsonInput loop
 // options.dev.printResult = console logs the final output
 // options.dev.printPaths = console logs the output of buildPathFromRelativePath
 //
