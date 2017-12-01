@@ -93,8 +93,8 @@ Note: '*' means required attribute
   * `<!--#insert path="*" jsonPath="" rawJson="" -->`
 * Inserting Json (passed in from parent component)
   * `<!--#data jsonPath="*" default="" rawJson="" -->`
-* Inserting Json (from raw or data input)
-  * `<!--#jsonInsert jsonPath="*" rawJson="" -->`
+* Inserting Json (from data input, or default value)
+  * `<!--#jsonInsert jsonPath="*" default="" -->`
 * Control Flow
   * If
     * `<!--#if jsonPath="*" rawJson="" -->`
