@@ -9,7 +9,6 @@
   "bugs": "https://github.com/internetErik/gulp-htmlincluder/issues",
   "author": {
     "name": "Erik Christianson",
-    "email": "internet.erik@gmail.com",
     "url": "https://github.com/internetErik"
   },
   "main": "./index.js",
@@ -18,24 +17,26 @@
     "url": "git://github.com/internetErik/gulp-htmlincluder.git"
   },
   "scripts": {
-    "test": "istanbul test _mocha --report html -- test/*.js --reporter spec",
-    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "build": "webpack -p",
+    "webpack": "webpack -w"
   },
   "dependencies": {
     "gulp-util": "~2.2.0",
     "through2": "*"
   },
   "devDependencies": {
-    "mocha": "*",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
     "coveralls": "*",
-    "mocha-lcov-reporter": "*",
-    "istanbul": "*",
     "event-stream": "*",
-    "should": "~2.1.0"
-  },
-  "engines": {
-    "node": ">=0.8.0",
-    "npm": ">=1.2.10"
+    "istanbul": "*",
+    "mocha": "*",
+    "mocha-lcov-reporter": "*",
+    "should": "~2.1.0",
+    "webpack": "^3.11.0",
+    "webpack-cli": "^2.0.4"
   },
   "licenses": [
     {
