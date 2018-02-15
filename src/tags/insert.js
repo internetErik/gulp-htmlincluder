@@ -4,7 +4,7 @@ import { buildPathFromRelativePath, updateRelativePaths } from '../util/file';
 import { jsonPathAttribute, filePathAttribute, insertFiles } from '../config';
 
 // <!--#insert path="" -->
-export default function processInsert(file) {
+export default function processInsert(file, jsonContext) {
   let filename = "";
   let content  = file.content;
 

@@ -7,7 +7,7 @@ import { findIndexOfClosingTag } from '../util/parsing';
 // <!--#wrap path="" jsonPath="" rawJson="" -->
 // <!--#middle -->
 // <!--#endwrap -->
-export default function processWraps(file, ndx, arr) {
+export default function processWraps(file, ndx, arr, jsonContext) {
   let endNdx = -1,
       fpath = "",
       content = arr[ndx],

@@ -5,7 +5,7 @@ import { jsonPathAttribute } from '../config';
 
 // <!--#each count="" jsonPath="" rawJson="" -->
 // <!--#endeach -->
-export default function processEach(file, ndx, arr) {
+export default function processEach(file, ndx, arr, jsonContext) {
   let endNdx = -1,
       startNdx = ndx + 1,
       content = arr[ndx],
@@ -26,6 +26,8 @@ export default function processEach(file, ndx, arr) {
     rawJson = getTagAttribute('rawJson', content);
     rawJson = processRawJson(rawJson);
   }
+  else if(jsonContext)
+    rawJson = processRawJson(jsonContext);
 
   if(jsonPath)
     jsonData = getDataFromJsonPath(jsonPath, rawJson);

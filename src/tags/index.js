@@ -65,15 +65,14 @@ export default function processContent(content, path, jsonContext) {
           tempDirectory = getTagAttribute("absPath", fragment);
           pathStack= tempDirectory;
         }
+        let curFile = {
+          content: fragment,
+          path: pathStack,
+          tmpPath: tempDirectory,
+        };
 
         // handle loading each particular kind of tag
-        if(fragment.indexOf('<!--#if') === 0) {
-          // looks ahead to remove its closing tag
-          // if the if check fails, it also turns the tags between into empty tags
-          // the if tag doesn't create a new context
-          processIf({ ret: 'content', content: fragment, path: pathStack, tmpPath: tempDirectory  }, i, splitArr)
-        }
-        else if(fragment.indexOf('<!--#data') === 0) {
+        if(fragment.indexOf('<!--#data') === 0) {
           // no look ahead
           // replaces itself with the value from the jsonPath it looks at
           splitArr[i] = processDataTag(fragment, jsonContext);
@@ -81,14 +80,20 @@ export default function processContent(content, path, jsonContext) {
         else if(fragment.indexOf('<!--#jsonInsert') === 0) {
           splitArr[i] = processJsonInsert(fragment);
         }
+        else if(fragment.indexOf(insertPattern) === 0) {
+          splitArr[i] = processInsert(curFile, jsonContext)
+        }
+        else if(fragment.indexOf('<!--#if') === 0) {
+          // looks ahead to remove its closing tag
+          // if the if check fails, it also turns the tags between into empty tags
+          // the if tag doesn't create a new context
+          processIf(curFile, i, splitArr, jsonContext)
+        }
         else if(fragment.indexOf('<!--#each') === 0) {
-          processEach({ ret: 'content', content: fragment, path: pathStack, tmpPath: tempDirectory  }, i, splitArr)
+          processEach(curFile, i, splitArr, jsonContext)
         }
         else if(fragment.indexOf('<!--#wrap') === 0) {
-          processWraps({ ret: 'content', content: fragment, path: pathStack, tmpPath: tempDirectory  }, i, splitArr);
-        }
-        else if(fragment.indexOf(insertPattern) === 0) {
-          splitArr[i] = processInsert({ ret: 'content', content: fragment, path: pathStack, tmpPath: tempDirectory })
+          processWraps(curFile, i, splitArr, jsonContext);
         }
 
         pathStack = path;
@@ -128,7 +133,6 @@ function flattenFragment(fragment, ndx, arr) {
 
   // yet another recursive call to process content
   content = processContent(content, path, rawJson);
-
   if(rawJson)
     content = addRawJsonWhereJsonPath(content, rawJson);
   else if(jsonPath)

@@ -5,7 +5,7 @@ import { jsonPathAttribute } from '../config';
 
 // <!--#if jsonPath="" rawJson="" -->
 // <!--#endif -->
-export default function processIf(file, ndx, arr) {
+export default function processIf(file, ndx, arr, jsonContext) {
   let endNdx = -1,
       content = arr[ndx],
       rawJson = "",
@@ -19,6 +19,8 @@ export default function processIf(file, ndx, arr) {
     rawJson = getTagAttribute('rawJson', content);
     rawJson = processRawJson(rawJson);
   }
+  else if(jsonContext)
+    rawJson = processRawJson(jsonContext);
 
   jsonData = getDataFromJsonPath(jsonPath, rawJson);
 
