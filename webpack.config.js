@@ -4,10 +4,13 @@ let config = {
   entry: {
     client: './src/index.js',
   },
+  target: 'node',
   output: {
     path: __dirname + '/lib',
     publicPath: '/',
     filename: 'htmlincluder.js',
+    library: '',
+    libraryTarget: 'commonjs',
   },
   module: {
     rules: [

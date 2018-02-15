@@ -1,6 +1,9 @@
 import { isWin } from './platform';
+import { getTagAttribute, setTagAttribute, changeTagAttributeName } from '../attributes';
+import { splitContent } from './parsing';
+import { devOptions, insertPattern, filePathAttribute } from '../config';
 
-function File(file) {
+export function File(file) {
   var f = {
     name : '',
     path : file.path,
@@ -48,7 +51,7 @@ export function buildPathFromRelativePath(cdir, fdir) {
 
 // Updates the relative path with the parent's path so it can be resolved on the
 // next turn
-export function updateRelativePaths(cdir, content) {
+export function updateRelativePaths(content, cdir) {
   var dir = "";
   content = splitContent(content);
 

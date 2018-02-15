@@ -25,8 +25,8 @@ export function getTagAttribute(attr, content) {
 // set the value of an attribute (attributeName="value")
 export function setTagAttribute(attr, content, value) {
   var fndx = -1,
-      lndx = -1
-      left = ""
+      lndx = -1,
+      left = "",
       right = "";
 
   fndx = content.indexOf(attr + '="');
@@ -41,8 +41,8 @@ export function setTagAttribute(attr, content, value) {
 // rename one attribute name to another (attributeName="value")
 export function changeTagAttributeName(attr, content, newAttr) {
   var fndx = -1,
-      lndx = -1
-      left = ""
+      lndx = -1,
+      left = "",
       right = "";
 
   fndx = content.indexOf(attr + '="');

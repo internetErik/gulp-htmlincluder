@@ -1,4 +1,4 @@
-import { splitContent, getDataFromJsonPath } from '../util/parsing.js';
+import { splitContent, getDataFromJsonPath } from '../util/parsing';
 import { hasTagAttribute, addTagAttribute } from '../attributes';
 import { jsonPathAttribute } from '../config';
 
@@ -27,7 +27,7 @@ export function processRawJson(jsonString) {
 export function appendJsonParentPath(content, jsonParentPath) {
   var fndx = -1,
       lndx = -1,
-      left = ""
+      left = "",
       right = "";
 
   // do nothing if there is no jsonParentPath
@@ -64,7 +64,7 @@ export function appendJsonParentPath(content, jsonParentPath) {
 export function addRawJsonWhereJsonPath(content, rawJson, jsonParentPath) {
   var fndx = -1,
       lndx = -1,
-      left = ""
+      left = "",
       right = "";
 
   // if we have a parent path, then we need to grab a subset of the rawJson

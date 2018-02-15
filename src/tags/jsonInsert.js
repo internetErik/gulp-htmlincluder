@@ -4,22 +4,16 @@ import { jsonPathAttribute } from '../config';
 
 // <!--#jsonInsert jsonPath="" default="" -->
 export default function processJsonInsert(tag) {
-  var jsonPath = "",
-      rawJson  = "",
-      defaultValue = "",
-      jsonData = "";
-
-  jsonPath = getTagAttribute(jsonPathAttribute, tag);
-
-  if(hasTagAttribute("default", tag))
-    defaultValue = getTagAttribute('default', tag);
-
-  jsonData = getDataFromJsonPath(jsonPath);
+  let defaultValue = (hasTagAttribute("default", tag))
+    ? getTagAttribute('default', tag)
+    : "";
+  let jsonPath = getTagAttribute(jsonPathAttribute, tag);
+  let jsonData = getDataFromJsonPath(jsonPath);
 
   if(jsonData || defaultValue)
     return jsonData || defaultValue;
   else {
-    console.warning("ERROR: jsonPath `" + jsonPath + "` is undefined, and no default value");
+    console.warn("ERROR: jsonPath `" + jsonPath + "` is undefined, and no default value");
     return "";
   }
 }

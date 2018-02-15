@@ -1,4 +1,5 @@
 import { toSafeJsonString } from '../json';
+import { options } from '../config';
 
 export function stripInnerTags(content) {
   // tmpContent = '!-- ... --';
@@ -23,7 +24,6 @@ export function stripInnerTags(content) {
 
   return '<' + tmpContent + '>';
 }
-
 
 // given a jsonObject and a path, return the data pointed at
 export function getDataFromJsonPath(jsonPath, jsonObj) {
@@ -130,9 +130,13 @@ export function findIndexOfClosingTag(openTag, closeTag, startNdx, arr) {
   var openCount = 1;
 
   for(var i = startNdx + 1; i < arr.length; i++) {
-    if(arr[i].indexOf(openTag) === 0)
+    let fragment = (Array.isArray(arr[i]))
+      ? arr[i][3] // [rawJson, jsonPath, filePath, content]
+      : arr[i];
+
+    if(fragment.indexOf(openTag) === 0)
       openCount++;
-    else if(arr[i].indexOf(closeTag) === 0) {
+    else if(fragment.indexOf(closeTag) === 0) {
       openCount--;
       if(openCount === 0) {
         endNdx = i;

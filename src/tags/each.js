@@ -9,7 +9,6 @@ export default function processEach(file, ndx, arr) {
   let endNdx = -1,
       startNdx = ndx + 1,
       content = arr[ndx],
-      middle = [],
       jsonPath = "",
       rawJson = "",
       jsonData = "",
@@ -27,8 +26,10 @@ export default function processEach(file, ndx, arr) {
     rawJson = getTagAttribute('rawJson', content);
     rawJson = processRawJson(rawJson);
   }
+
   if(jsonPath)
     jsonData = getDataFromJsonPath(jsonPath, rawJson);
+
   if(hasTagAttribute('count', content))
     count = parseInt(getTagAttribute('count', content), 10);
 
@@ -61,7 +62,7 @@ export default function processEach(file, ndx, arr) {
   arr[ndx] = "";
   arr[endNdx] = "";
 
-  middle = arr.splice(startNdx, endNdx - startNdx)
+  let middle = arr.splice(startNdx, endNdx - startNdx);
 
   content = [];
 
@@ -72,23 +73,15 @@ export default function processEach(file, ndx, arr) {
     // if we have jsonData to insert ...
     if(jsonData && Array.isArray(jsonData)) {
       for(let j = 0; j < tmp.length; j++) {
-        if(tmp[j].indexOf('<!--#data')   === 0 && !hasTagAttribute('rawJson', tmp[j])) {
-          if(Array.isArray(jsonData)) {
-            tmp[j] = addTagAttribute('rawJson', tmp[j], toSafeJsonString(jsonData[i]))
+        if(!hasTagAttribute('rawJson', tmp[j])) {
+          if(tmp[j].indexOf('<!--#') === 0) {
+            if(typeof(jsonData[i]) === 'object') {
+              tmp[j] = [toSafeJsonString(jsonData[i]), '', '', tmp[j]];
+            }
+            else if(tmp[j].indexOf('<!--#data') === 0) {
+              tmp[j] = '' + jsonData[i];
+            }
           }
-          if(typeof(jsonData[i]) === 'object') {
-            tmp[j] = addTagAttribute('rawJson', tmp[j], toSafeJsonString(jsonData[i]))
-          }
-          else {
-            tmp[j] = '' + jsonData[i];
-          }
-        }
-        if((tmp[j].indexOf('<!--#wrap')   === 0 ||
-            tmp[j].indexOf('<!--#insert') === 0   ) &&
-           !hasTagAttribute('rawJson', tmp[j])      &&
-           typeof(jsonData[i]) === 'object'
-        ) {
-          tmp[j] = addTagAttribute('rawJson', tmp[j], toSafeJsonString(jsonData[i]));
         }
       }
     }

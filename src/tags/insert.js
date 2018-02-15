@@ -5,17 +5,16 @@ import { jsonPathAttribute, filePathAttribute, insertFiles } from '../config';
 
 // <!--#insert path="" -->
 export default function processInsert(file) {
-  var filename = "",
-      rawJson = "",
-      jsonPath = "",
-      jsonParentPath = "",
-      content  = file.content;
+  let filename = "";
+  let content  = file.content;
 
-  if(hasTagAttribute(jsonPathAttribute, content))
-    jsonParentPath = getTagAttribute(jsonPathAttribute, content);
+  let rawJson = (hasTagAttribute('rawJson', content))
+        ? getTagAttribute('rawJson', content)
+        : "";
 
-  if(hasTagAttribute('rawJson', content))
-    rawJson = getTagAttribute('rawJson', content);
+  let jsonParentPath = (hasTagAttribute(jsonPathAttribute, content))
+    ? getTagAttribute(jsonPathAttribute, content)
+    : "";
 
   if(hasTagAttribute(filePathAttribute, content)) {
     filename = getTagAttribute(filePathAttribute, content);
@@ -31,13 +30,5 @@ export default function processInsert(file) {
     return "";
   }
 
-  if(rawJson)
-    content = addRawJsonWhereJsonPath(content, rawJson);
-  else if(jsonParentPath)
-    content = appendJsonParentPath(content, jsonParentPath);
-
-  if(file.tmpPath)
-    content = updateRelativePaths(file.tmpPath, content);
-
-  return content;
+  return [rawJson, jsonParentPath, file.tmpPath, content];
 }

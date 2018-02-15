@@ -1,6 +1,7 @@
 import processClip from './tags/clip';
 import processContent from './tags';
-import { configureFiles, setOptions } from './config';
+import { configureFiles, setOptions, pageFiles, options } from './config';
+import { File } from './util/file';
 
 module.exports = {
   initialize : options => setOptions(options),
@@ -14,7 +15,7 @@ module.exports = {
   },
   // builds string
   buildFileResult : callback => pageFiles.map(file => {
-    file.content = processContent(file.content, file.path);
+    file.content = processContent(file.content, file.path, options.jsonInput || {});
     file.processed = true;
 
     if(callback)

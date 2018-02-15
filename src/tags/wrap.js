@@ -1,5 +1,5 @@
 import { hasTagAttribute, getTagAttribute } from '../attributes';
-import { jsonPathAttribute, filePathAttribute, wrapFiles } from '../config';
+import { jsonPathAttribute, filePathAttribute, wrapFiles, pathPattern } from '../config';
 import { addRawJsonWhereJsonPath, appendJsonParentPath } from '../json';
 import { buildPathFromRelativePath, updateRelativePaths } from '../util/file';
 import { findIndexOfClosingTag } from '../util/parsing';
@@ -8,16 +8,17 @@ import { findIndexOfClosingTag } from '../util/parsing';
 // <!--#middle -->
 // <!--#endwrap -->
 export default function processWraps(file, ndx, arr) {
-  var endNdx = -1,
+  let endNdx = -1,
       fpath = "",
       content = arr[ndx],
       filename = "",
       rawJson = "",
       jsonParentPath = "",
       pathPattern = 'path="',
-      absPathPattern = 'absPath="'
-      pattern = (content.indexOf(pathPattern) > -1) ? pathPattern : absPathPattern,
-      pathTag = (pattern === pathPattern) ? 'path' : 'absPath';
+      absPathPattern = 'absPath="',
+      pattern = (content.indexOf(pathPattern) > -1)
+        ? pathPattern
+        : absPathPattern;
 
   // see if we are loading a json path
   if(hasTagAttribute(jsonPathAttribute, content))
@@ -59,20 +60,6 @@ export default function processWraps(file, ndx, arr) {
     return "";
   }
 
-  if(rawJson) {
-    content[0] = addRawJsonWhereJsonPath(content[0], rawJson, jsonParentPath);
-    content[1] = addRawJsonWhereJsonPath(content[1], rawJson, jsonParentPath);
-  }
-  else if(jsonParentPath) {
-    content[0] = appendJsonParentPath(content[0], jsonParentPath);
-    content[1] = appendJsonParentPath(content[1], jsonParentPath);
-  }
-
-  if(file.tmpPath) {
-    content[0] = updateRelativePaths(file.tmpPath, content[0]);
-    content[1] = updateRelativePaths(file.tmpPath, content[1]);
-  }
-
-  arr[ndx] = content[0];
-  arr[endNdx] = content[1];
+  arr[ndx] = [rawJson, jsonParentPath, file.tmpPath, content[0]];
+  arr[endNdx] = [rawJson, jsonParentPath, file.tmpPath, content[1]];
 }
