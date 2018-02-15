@@ -78,7 +78,7 @@ export default function processEach(file, ndx, arr, jsonContext) {
         if(!hasTagAttribute('rawJson', tmp[j])) {
           if(tmp[j].indexOf('<!--#') === 0) {
             if(typeof(jsonData[i]) === 'object') {
-              tmp[j] = [toSafeJsonString(jsonData[i]), '', '', tmp[j]];
+              tmp[j] = [toSafeJsonString(jsonData[i]), jsonPath, file.path, tmp[j]];
             }
             else if(tmp[j].indexOf('<!--#data') === 0) {
               tmp[j] = '' + jsonData[i];

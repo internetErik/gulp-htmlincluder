@@ -65,6 +65,7 @@ export default function processContent(content, path, jsonContext) {
           tempDirectory = getTagAttribute("absPath", fragment);
           pathStack= tempDirectory;
         }
+
         let curFile = {
           content: fragment,
           path: pathStack,

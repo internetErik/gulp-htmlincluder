@@ -9,8 +9,8 @@ export default function processInsert(file, jsonContext) {
   let content  = file.content;
 
   let rawJson = (hasTagAttribute('rawJson', content))
-        ? getTagAttribute('rawJson', content)
-        : "";
+      ? getTagAttribute('rawJson', content)
+      : "";
 
   let jsonParentPath = (hasTagAttribute(jsonPathAttribute, content))
     ? getTagAttribute(jsonPathAttribute, content)
@@ -26,7 +26,7 @@ export default function processInsert(file, jsonContext) {
   if(insertFiles[filename])
     content = insertFiles[filename].content;
   else {
-    console.error("ERROR: in file " + file.path + ": insert file `" + filename + "` does not exist");
+    console.error("ERROR: in file '" + file.path + "': insert file `" + filename + "` does not exist");
     return "";
   }
 
