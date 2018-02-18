@@ -1,6 +1,6 @@
 {
   "name": "gulp-htmlincluder",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "description": "Gulp plugin for building files into each other.  Made for a workflow involving responsive unit testing.",
   "keywords": [
     "gulpplugin"
