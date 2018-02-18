@@ -134,6 +134,7 @@ function flattenFragment(fragment, ndx, arr) {
 
   // yet another recursive call to process content
   content = processContent(content, path, rawJson);
+
   if(rawJson)
     content = addRawJsonWhereJsonPath(content, rawJson);
   else if(jsonPath)

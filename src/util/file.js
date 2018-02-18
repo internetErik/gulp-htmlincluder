@@ -7,7 +7,7 @@ export function File(file) {
   var f = {
     name : '',
     path : file.path,
-    content : file.contents.toString('utf8'),
+    content : file.contents.toString('utf8').trim(),
     processed : false,
     file : file
   };

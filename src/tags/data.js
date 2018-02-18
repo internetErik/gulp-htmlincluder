@@ -23,6 +23,9 @@ export default function processDataTag(tag, jsonContext) {
     rawJson = processRawJson(jsonContext);
 
   jsonData = getDataFromJsonPath(jsonPath, rawJson);
+  let result = jsonData || defaultValue;
 
-  return jsonData || defaultValue;
+  return (typeof(result) === 'string')
+    ?  result
+    : JSON.stringify(result).replace(/"/g, "'");
 }

@@ -1,30 +1,6 @@
 import { toSafeJsonString } from '../json';
 import { options } from '../config';
 
-export function stripInnerTags(content) {
-  // tmpContent = '!-- ... --';
-  let tmpContent = content.substr(0, content.length - 1).substr(1);
-
-  let startNdx = tmpContent.indexOf('<!--#');
-
-  if(startNdx === -1)
-    return content;
-
-  while(startNdx !== -1) {
-    let closeNdx = parseToClosingTag(tmpContent.substr(startNdx), '<!--#', '-->');
-    if(closeNdx > -1) {
-      tmpContent = tmpContent.substr(0, startNdx) + tmpContent.substr(closeNdx);
-      startNdx = startNdx = tmpContent.indexOf('<!--#');
-    }
-    else {
-      console.warn('stripInnerTags - No closing tag');
-      break;
-    }
-  }
-
-  return '<' + tmpContent + '>';
-}
-
 // given a jsonObject and a path, return the data pointed at
 export function getDataFromJsonPath(jsonPath, jsonObj) {
   var json = jsonObj || options.jsonInput;
@@ -42,87 +18,114 @@ export function getDataFromJsonPath(jsonPath, jsonObj) {
 }
 
 // Given some content (starting with a tag) find the index after the end tag
-export function parseToClosingTag(content, searchPattern, endPattern) {
-  let lndx = content.indexOf(endPattern);
-  let tagDepth = 1;// when this gets to 0 we are done
-  let nextCloseNdx = lndx;
+export function getIndexOfClosingBrace(content, startPattern, endPattern) {
+  let tagDepth = 0;// when this gets to 0 we are done
+  let tmpContent = content.substr(1);
 
   // prime loop by finding next start tag
-  let nextOpenNdx = content.substr(1).indexOf(searchPattern);
-  // make sure that it is necessary to look for internal tags
-  if(nextOpenNdx > -1 && nextOpenNdx < nextCloseNdx) {
-    nextOpenNdx++;
-    // while current tag is not closed...
-    while(tagDepth > 0) {
-      // start tag is before current close tag
-      if(nextOpenNdx > -1 && nextOpenNdx < nextCloseNdx) { // Then we need to find the next lndx
-        tagDepth++;
-        // find an open tag between 0 and lndx
-        let tmp = content.substr(nextOpenNdx + 1).indexOf(searchPattern);
-        if(tmp === -1)
-          nextOpenNdx = -1;
-        else
-          nextOpenNdx += tmp + 1;
-      }
-      else { // current close tag is before start tag
-        let tmp = content.substr(nextCloseNdx).indexOf(endPattern);
-        if(tmp === -1)
-          nextCloseNdx = -1;
-        else
-          nextCloseNdx += tmp + 1;
+  let nextCloseNdx = tmpContent.indexOf(endPattern);
+  let nextOpenNdx = tmpContent.indexOf(startPattern);
 
-        tagDepth--;
-        if(tagDepth > 0 && nextCloseNdx === -1)
-          console.error('There is an unclosed tag', content);
+  if(nextCloseNdx ===  -1)
+    console.error('No Close tag');
+
+  // if there is a nextCloseNdx, but no openNdx, return the end of the tag.
+  if(nextOpenNdx === -1 || nextOpenNdx > nextCloseNdx)
+    return nextCloseNdx + 4;
+
+  // Now we know that we have an inner tag ... or should if the syntax is correct
+
+  // we found an open tag, so we need a close tag. Set depth to 1
+  tagDepth = 1;
+
+  // add 1 so we will search passed the tag
+  nextOpenNdx += 1;
+  nextCloseNdx += 1;
+
+  // while current tag is not closed...
+  do {
+    let tmpOpen, tmpClosed;
+
+    // start tag is before close tag, then
+    // we can look to see if there is yet another tag nested between
+    if(nextOpenNdx > -1 && nextOpenNdx < nextCloseNdx) {
+      tmpOpen = tmpContent.substr(nextOpenNdx).indexOf(startPattern);
+      // see if we found something, and add this new index to our accumulator
+      if(tmpOpen > -1) {
+        // add 1 because we need next search to be beyond this tag
+        nextOpenNdx += tmpOpen + 2;
+        tagDepth += 1;
+      }
+      else
+        nextOpenNdx = -1;
+    }
+    else { // current close tag is before start tag
+      tmpClosed = tmpContent.substr(nextCloseNdx).indexOf(endPattern);
+      // see if we found something, and add this new index to our accumulator
+      if(tmpClosed > -1) {
+        // add 1 because we need next search to be beyond this tag
+        nextCloseNdx += tmpClosed + 2;
+        tagDepth -= 1;
+      }
+      else if(tagDepth > 0) {
+        console.error('There is an unclosed tag', content);
+        break;
       }
     }
-    // should be the ndx of the last closing tag related to the current tag we are parsing
-    lndx = nextCloseNdx;
-  }
+  } while(tagDepth > 0)
 
-  if(lndx > -1)
-    lndx += endPattern.length;
-  else
-    console.error("ERROR: no closing tag! you are missing a '"+endPattern+"'");
+  nextCloseNdx += 4;
 
-  return lndx
+  if(nextCloseNdx === -1)
+    console.error("ERROR: no closing tag! you are missing a '" + endPattern + "'");
+
+  return nextCloseNdx;
 }
 
 // Splits a string into an array where special tags are on their own
 // can optionally only split it up based on a particular tag
 export function splitContent(content, tag) {
   let arr = [],
-      fndx = -1,
-      lndx = -1,
+      openNdx = -1,
+      closeNdx = -1,
       partial = "",
-      searchPattern = tag || '<!--#',
+      startPattern = tag || '<!--#',
       endPattern = '-->';
 
   //prime the loop
-  fndx = content.indexOf(searchPattern);
-  if(fndx === -1)
-    arr.push(content);
+  openNdx = content.indexOf(startPattern);
 
-  while(fndx > -1) {
-    partial = content.slice(0, fndx);
+  if(openNdx === -1)
+    return [content];
+
+  while(openNdx > -1) {
+    partial = content.slice(0, openNdx);
     arr.push(partial);
-    content = content.slice(fndx);
+    content = content.slice(openNdx);
 
-    // get the lndx despite inner open tags like <!-- <!-- --> -->
-    let lndx = parseToClosingTag(content, searchPattern, endPattern);
+    // get the closeNdx despite inner open tags
+    // openNdx-><!-- <!-- --> <!-- <!-- --> --> --><-closeNdx
+    let closeNdx = getIndexOfClosingBrace(content, startPattern, endPattern);
 
-    partial = content.slice(0, lndx);
+    partial = content.slice(0, closeNdx);
     arr.push(partial);
-    content = content.slice(lndx);
-    fndx = content.indexOf(searchPattern);
+    content = content.slice(closeNdx);
+    openNdx = content.indexOf(startPattern);
 
     // on final pass, push the remainer of the content string
-    if(fndx === -1)
+    if(openNdx === -1)
       arr.push(content);
   }
 
   return arr;
 }
+
+// ToDo. These should go to a better place, for now only one place was using a
+// magic number
+const RAW_JSON_NDX  = 0;
+const JSON_PATH_NDX = 1;
+const FILE_PATH_NDX = 2;
+const CONTENT_NDX   = 3;
 
 // returns the index of the closing tag for a given opening tag
 export function findIndexOfClosingTag(openTag, closeTag, startNdx, arr) {
@@ -131,7 +134,7 @@ export function findIndexOfClosingTag(openTag, closeTag, startNdx, arr) {
 
   for(var i = startNdx + 1; i < arr.length; i++) {
     let fragment = (Array.isArray(arr[i]))
-      ? arr[i][3] // [rawJson, jsonPath, filePath, content]
+      ? arr[i][CONTENT_NDX] // [i] contains [rawJson, jsonPath, filePath, content]
       : arr[i];
 
     if(fragment.indexOf(openTag) === 0)
