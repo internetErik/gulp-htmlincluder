@@ -96,6 +96,10 @@ export default function processContent(content, path, jsonContext) {
         else if(fragment.indexOf('<!--#wrap') === 0) {
           processWraps(curFile, i, splitArr, jsonContext);
         }
+        else {
+          console.error('An unidentified tag is being used: ' + fragment);
+          splitArr[i] = 'TAG REMOVED HERE';
+        }
 
         pathStack = path;
       }
