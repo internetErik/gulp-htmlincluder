@@ -32,6 +32,9 @@ export default function processContent(content, path, jsonContext) {
   let splitArr = [];
   let itterCount = 0;
 
+  // create a tmp version of content to see if we actually do any work on it
+  let contentBeforeProcessing = content;
+
   // prime loop: split content into all insertion points
   splitArr = splitContent(content); // '' => ['']
 
@@ -110,6 +113,15 @@ export default function processContent(content, path, jsonContext) {
 
     // re-join content into a string, and repeat
     content = splitArr.join(''); // [''] => ''
+
+    // We split the string, so there should have been work. Was there?
+    if(content === contentBeforeProcessing) {
+      console.error('Content was split, but no change was made in it: ' + content);
+      console.error('Something in your tagging may be making it impossible to process correctly')
+      console.error('Returning the content without further processing')
+      return content;
+    }
+
     // split file into all insertion points
     splitArr = splitContent(content); // '' => ['']
 

@@ -1,0 +1,46 @@
+<div>
+Repeat something a number of times
+</div>
+
+`<!--#each count="3" -->
+<div>hello world</div>
+<!--#endeach -->
+
+<div>
+Loop through some data and print it
+</div>
+
+<!--#each
+  jsonPath="arr"
+  rawJson="{
+    arr: [
+      { data: '1' },
+      { data: '2' },
+      { data: '3' },
+      { data: '4' },
+      { data: '5' },
+      { data: '6' },
+      { data: '7' },
+    ]
+  }"
+-->
+  <div><!--#data jsonPath="data" --></div>
+<!--#endeach -->
+
+<div>
+  Insert a list and pass data into it.
+</div>
+
+<!--#insert
+  path="./components/-list.html"
+  rawJson="{
+    members: [
+      { name: 'member 1'},
+      { name: 'member 2'},
+      { name: 'member 3'},
+      { name: 'member 4'},
+      { name: 'member 5'},
+      { name: 'member 6'},
+    ],
+  }"
+-->

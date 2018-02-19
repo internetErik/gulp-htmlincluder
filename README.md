@@ -85,11 +85,11 @@ Basic tag structure
 
 Note: '*' means required attribute
 
-* Wrapping
+* Wrapping a file with another file
   * `<!--#wrap path="*" jsonPath="" rawJson="" -->`
-  * `<!--#middle -->`
+  * `<!--#middle -->` <-- the wrapped file gets inserted here
   * `<!--#endwrap -->`
-* Inserting
+* Inserting a file
   * `<!--#insert path="*" jsonPath="" rawJson="" -->`
 * Inserting Json (passed in from parent component)
   * `<!--#data jsonPath="*" default="" rawJson="" -->`
