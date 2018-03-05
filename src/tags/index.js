@@ -46,9 +46,6 @@ export default function processContent(content, path, jsonContext) {
     // At this point we should have a mix of strings and arrays
     // We need to loop through again and process each of the arrays
 
-    // flatten out sub-arrays
-    // splitArr = splitArr.map(flattenFragment);
-
     // re-join content into a string, and repeat
     content = splitArr.join(''); // [''] => ''
 
@@ -136,19 +133,19 @@ function processSplitArray(splitArr, path, jsonContext) {
       }
       else if(fragment.indexOf(insertPattern) === 0) {
         const fileInfo = processInsert(curFile, jsonContext);
-        splitArr[i] = insertFile(fileInfo);
+        splitArr[i] = flattenInsertedContent(fileInfo);
       }
       else if(fragment.indexOf('<!--#wrap') === 0) {
         const [openNdx, closeNdx] = processWraps(curFile, i, splitArr, jsonContext);
-        splitArr[openNdx] = insertFile(splitArr[openNdx]);
-        splitArr[closeNdx] = insertFile(splitArr[closeNdx]);
+        splitArr[openNdx] = flattenInsertedContent(splitArr[openNdx]);
+        splitArr[closeNdx] = flattenInsertedContent(splitArr[closeNdx]);
       }
       else if(fragment.indexOf('<!--#if') === 0) {
         processIf(curFile, i, splitArr, jsonContext)
       }
       else if(fragment.indexOf('<!--#each') === 0) {
         processEach(curFile, i, splitArr, jsonContext);
-        splitArr[i] = flattenFragment(splitArr[i], pathStack);
+        splitArr[i] = flattenEach(splitArr[i], pathStack);
       }
       else {
         console.error('An unidentified tag is being used: ' + fragment);
@@ -162,7 +159,18 @@ function processSplitArray(splitArr, path, jsonContext) {
   return splitArr;
 }
 
-function flattenFragment(fragment, path) {
+/**
+ * The result of each tags produce an array that lumps together the expanded
+ * content between the two tags.
+ *
+ * It does this by running through the array, and if data is needed, it runs
+ * it through processContent. Otherwise it simply adds it to a string.
+ *
+ * @param  {Array}  fragment The collection of content between the each tags
+ * @param  {String} path     The current file path
+ * @return {String}          Processed content between each
+ */
+function flattenEach(fragment, path) {
 
   if(!Array.isArray(fragment))
     return fragment;
@@ -180,7 +188,13 @@ function flattenFragment(fragment, path) {
   return result;
 }
 
-function insertFile(fileInfo) {
+/**
+ * When an #insert or #wrap/#endwrap parse runs it inserts an array into its
+ * spot. Then it will flatten this out
+ * @param  {[type]} fileInfo [description]
+ * @return {[type]}          [description]
+ */
+function flattenInsertedContent(fileInfo) {
   const [
     rawJson,
     jsonParentPath,
