@@ -44,8 +44,7 @@ export default function processIf(file, ndx, arr, jsonContext) {
     return;
   }
 
-  if(typeof(jsonData) === 'undefined' || jsonData == false) {
-    for(var i = ndx; i < endNdx; i++)
-      arr[i] = "";
-  }
+  // if undefined jsonData or false, then we eliminate the section
+  if(typeof(jsonData) === 'undefined' || jsonData == false)
+    arr.splice(ndx, endNdx - ndx);
 }

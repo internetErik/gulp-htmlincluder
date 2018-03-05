@@ -2,7 +2,7 @@
 Repeat something a number of times
 </div>
 
-`<!--#each count="3" -->
+<!--#each count="3" -->
 <div>hello world</div>
 <!--#endeach -->
 
@@ -25,6 +25,25 @@ Loop through some data and print it
   }"
 -->
   <div><!--#data jsonPath="data" --></div>
+<!--#endeach -->
+
+<!--#each
+  jsonPath="arr"
+  rawJson="{
+    arr: [
+      { show: true,  data: 'some info 1' },
+      { show: false, data: 'some info 2' },
+      { show: true,  data: 'some info 3' },
+      { show: false, data: 'some info 4' },
+      { show: false, data: 'some info 5' },
+      { show: false, data: 'some info 6' },
+      { show: true,  data: 'some info 7' },
+    ]
+  }"
+-->
+  <!--#if jsonPath="show" -->
+  <div><!--#data jsonPath="data" --></div>
+  <!--#endif -->
 <!--#endeach -->
 
 <div>

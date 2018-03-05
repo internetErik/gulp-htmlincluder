@@ -62,4 +62,5 @@ export default function processWraps(file, ndx, arr, jsonContext) {
 
   arr[ndx] = [rawJson, jsonParentPath, file.tmpPath, content[0]];
   arr[endNdx] = [rawJson, jsonParentPath, file.tmpPath, content[1]];
+  return [ndx, endNdx];
 }

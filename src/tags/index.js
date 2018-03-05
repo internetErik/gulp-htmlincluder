@@ -40,76 +40,14 @@ export default function processContent(content, path, jsonContext) {
 
   // if we have an array larger than 1, then there is at least 1 insert to be made
   while(splitArr.length > 1) {
-    let tempDirectory;
-    let pathStack = path;
 
-    // iterate through content
-    for(let i = 0; i < splitArr.length; i++) {
-      let fragment = splitArr[i];
+    splitArr = processSplitArray(splitArr, path, jsonContext);
 
-      if(fragment.indexOf('<!--#') === 0) {
-        // process any tags inside of this tag
-        fragment = '<' + processContent(fragment.substr(0, fragment.length - 1).substr(1), path, jsonContext) + '>';
-
-        //
-        // At this point we can assume that the tag we are working with has no
-        // embedded tags.
-        //
-
-        // See if this has a file path, or absolute file path. If we don't have
-        // an absolute path, then we need to build one.
-        let hasPath = hasTagAttribute(filePathAttribute, fragment);
-        let hasAbsPath = hasTagAttribute("absPath", fragment);
-
-        // get or build paths
-        if(hasPath)
-          tempDirectory = buildPathFromRelativePath(pathStack, getTagAttribute(filePathAttribute, fragment));
-        else if(hasAbsPath) {
-          tempDirectory = getTagAttribute("absPath", fragment);
-          pathStack= tempDirectory;
-        }
-
-        let curFile = {
-          content: fragment,
-          path: pathStack,
-          tmpPath: tempDirectory,
-        };
-
-        // handle loading each particular kind of tag
-        if(fragment.indexOf('<!--#data') === 0) {
-          // no look ahead
-          // replaces itself with the value from the jsonPath it looks at
-          splitArr[i] = processDataTag(fragment, jsonContext);
-        }
-        else if(fragment.indexOf('<!--#jsonInsert') === 0) {
-          splitArr[i] = processJsonInsert(fragment);
-        }
-        else if(fragment.indexOf(insertPattern) === 0) {
-          splitArr[i] = processInsert(curFile, jsonContext)
-        }
-        else if(fragment.indexOf('<!--#if') === 0) {
-          // looks ahead to remove its closing tag
-          // if the if check fails, it also turns the tags between into empty tags
-          // the if tag doesn't create a new context
-          processIf(curFile, i, splitArr, jsonContext)
-        }
-        else if(fragment.indexOf('<!--#each') === 0) {
-          processEach(curFile, i, splitArr, jsonContext)
-        }
-        else if(fragment.indexOf('<!--#wrap') === 0) {
-          processWraps(curFile, i, splitArr, jsonContext);
-        }
-        else {
-          console.error('An unidentified tag is being used: ' + fragment);
-          splitArr[i] = 'TAG REMOVED HERE';
-        }
-
-        pathStack = path;
-      }
-    }
+    // At this point we should have a mix of strings and arrays
+    // We need to loop through again and process each of the arrays
 
     // flatten out sub-arrays
-    splitArr = splitArr.map(flattenFragment);
+    // splitArr = splitArr.map(flattenFragment);
 
     // re-join content into a string, and repeat
     content = splitArr.join(''); // [''] => ''
@@ -142,22 +80,113 @@ export default function processContent(content, path, jsonContext) {
   return content;
 }
 
-function flattenFragment(fragment, ndx, arr) {
+/**
+ * Loops through split content. For each tag, it makes a call back up to
+ * processContent in order to take care of any inner tags.
+ *
+ * Once there are no more inner tags, we look at the tag, and depending on its
+ * kind, we run a different tag processor on it.
+ *
+ * @param  {Array}  splitArr    The array of split up tags
+ * @param  {String} path        The file path we are currently using for relative paths
+ * @param  {Object} jsonContext The json data consumable by tags in this context
+ * @return {Array}              The array, having made one pass to process it
+ */
+function processSplitArray(splitArr, path, jsonContext) {
+  let tempDirectory;
+  let pathStack = path;
+  // iterate through content
+  for(let i = 0; i < splitArr.length; i++) {
+    let fragment = splitArr[i];
+
+    if(fragment.indexOf('<!--#') === 0) {
+      // process any tags inside of this tag
+      fragment = '<' + processContent(fragment.substr(0, fragment.length - 1).substr(1), path, jsonContext) + '>';
+
+      //
+      // At this point we can assume that the tag we are working with has no
+      // embedded tags.
+      //
+
+      // See if this has a file path, or absolute file path. If we don't have
+      // an absolute path, then we need to build one.
+      let hasPath = hasTagAttribute(filePathAttribute, fragment);
+      let hasAbsPath = hasTagAttribute("absPath", fragment);
+
+      // get or build paths
+      if(hasPath)
+        tempDirectory = buildPathFromRelativePath(pathStack, getTagAttribute(filePathAttribute, fragment));
+      else if(hasAbsPath) {
+        tempDirectory = getTagAttribute("absPath", fragment);
+        pathStack = tempDirectory;
+      }
+
+      let curFile = {
+        content: fragment,
+        path: pathStack,
+        tmpPath: tempDirectory,
+      };
+
+      // handle loading each particular kind of tag
+      if(fragment.indexOf('<!--#data') === 0) {
+        splitArr[i] = processDataTag(fragment, jsonContext);
+      }
+      else if(fragment.indexOf('<!--#jsonInsert') === 0) {
+        splitArr[i] = processJsonInsert(fragment);
+      }
+      else if(fragment.indexOf(insertPattern) === 0) {
+        const fileInfo = processInsert(curFile, jsonContext);
+        splitArr[i] = insertFile(fileInfo);
+      }
+      else if(fragment.indexOf('<!--#wrap') === 0) {
+        const [openNdx, closeNdx] = processWraps(curFile, i, splitArr, jsonContext);
+        splitArr[openNdx] = insertFile(splitArr[openNdx]);
+        splitArr[closeNdx] = insertFile(splitArr[closeNdx]);
+      }
+      else if(fragment.indexOf('<!--#if') === 0) {
+        processIf(curFile, i, splitArr, jsonContext)
+      }
+      else if(fragment.indexOf('<!--#each') === 0) {
+        processEach(curFile, i, splitArr, jsonContext);
+        splitArr[i] = flattenFragment(splitArr[i], pathStack);
+      }
+      else {
+        console.error('An unidentified tag is being used: ' + fragment);
+        splitArr[i] = fragment.replace('<!--#', '<!--!#');
+      }
+
+      pathStack = path;
+    }
+  }
+
+  return splitArr;
+}
+
+function flattenFragment(fragment, path) {
+
   if(!Array.isArray(fragment))
     return fragment;
 
-  let [ rawJson, jsonPath, path, content ] = fragment;
+  let result = '';
+  for(let i = 0; i < fragment.length; i++) {
+    if(Array.isArray(fragment[i])) {
+      const [ data, content ] = fragment[i];
+      result += processContent(content, path, data);
+    }
+    else
+      result += fragment[i];
+  }
 
-  // yet another recursive call to process content
-  content = processContent(content, path, rawJson);
+  return result;
+}
 
-  if(rawJson)
-    content = addRawJsonWhereJsonPath(content, rawJson);
-  else if(jsonPath)
-    content = appendJsonParentPath(content, jsonPath);
+function insertFile(fileInfo) {
+  const [
+    rawJson,
+    jsonParentPath,
+    tmpPath,
+    content,
+  ] = fileInfo;
 
-  if(path)
-    content = updateRelativePaths(content, path);
-
-  return content;
+  return processContent(content, tmpPath, rawJson);
 }

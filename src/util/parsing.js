@@ -117,6 +117,7 @@ export function splitContent(content, tag) {
       arr.push(content);
   }
 
+  // Now we have an array of tags, and content
   return arr;
 }
 
