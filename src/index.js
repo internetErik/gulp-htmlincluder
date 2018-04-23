@@ -16,6 +16,8 @@ module.exports = {
   // builds string
   buildFileResult : callback => pageFiles.map(file => {
     file.content = processContent(file.content, file.path, options.jsonInput || {});
+    // any virtual stuff
+    file.content = file.content.replace(/<!--!#/g, '<!--#');
     file.processed = true;
 
     if(callback)
