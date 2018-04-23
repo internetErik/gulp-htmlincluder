@@ -52,6 +52,14 @@ gulp.task('each', function() {
   ])
 })
 
+gulp.task('tabs', function() {
+  genericHtmlIncluder([
+    './test/html/tabs.html',
+    './test/html/components/*.html',
+    './test/html/tab-test/*.html',
+  ])
+})
+
 gulp.task('default', function() {
   let options = {
     jsonInput: {

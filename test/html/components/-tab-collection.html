@@ -1,0 +1,16 @@
+<div class="tab-collection <!--#data jsonPath="className" -->">
+  <div class="tab-collection__tabs">
+    <!--#each jsonPath="tabs" -->
+      <div class="tabs__tab <!--#data jsonPath="className" -->" data-tab-id="<!--#data jsonPath="tabId" -->">
+        <!--#data jsonPath="displayName" -->
+      </div>
+    <!--#endeach -->
+  </div>
+  <div class="tab-collection__contents">
+    <!--#each jsonPath="tabs" -->
+    <div class="contents__container" data-tab-id="<!--#data jsonPath="tabId" -->">
+      <!--#insert path="<!--#data jsonPath="filePath" -->" -->
+    </div>
+    <!--#endeach -->
+  </div>
+</div>

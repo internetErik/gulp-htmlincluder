@@ -7,6 +7,7 @@ export default function processJsonInsert(tag) {
   let defaultValue = (hasTagAttribute("default", tag))
     ? getTagAttribute('default', tag)
     : "";
+
   let jsonPath = getTagAttribute(jsonPathAttribute, tag);
   let jsonData = getDataFromJsonPath(jsonPath);
 
