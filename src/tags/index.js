@@ -149,7 +149,7 @@ function processSplitArray(splitArr, path, jsonContext) {
       }
       else {
         console.error('An unidentified tag is being used: ' + fragment);
-        splitArr[i] = fragment.replace('<!--#', '<!--!#');
+        splitArr[i] = fragment.replace('<!--#', '<!--!unknwn-tag#');
       }
 
       pathStack = path;

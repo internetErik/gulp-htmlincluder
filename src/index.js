@@ -17,8 +17,9 @@ module.exports = {
   buildFileResult : callback => pageFiles.map(file => {
     file.content = processContent(file.content, file.path, options.jsonInput || {});
 
-    // correct any unknown tags that were modified
-    file.content = file.content.replace(/<!--!#/g, '<!--#');
+    // When an unknown tag is found it is changed to <!--!unknwn-tag# so that it doesn't
+    // continually get found. This will undo those changes
+    file.content = file.content.replace(/<!--!unknwn-tag#/g, '<!--#');
     file.processed = true;
 
     if(callback)
