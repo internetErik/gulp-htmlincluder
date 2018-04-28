@@ -26,7 +26,7 @@ module.exports = function (options) {
 	function htmlincluder() {
 		includer.buildFileResult(function(file) {
 			var f = file.file;
-			f.contents = new Buffer(file.content);
+			f.contents = Buffer.from(file.content);
 
     		that.push(f);
 		});
