@@ -17,28 +17,24 @@ export function getDataFromJsonPath(jsonPath, jsonObj) {
   return result;
 }
 
-// Given some content (starting with a tag) find the index after the end tag
+// Given some content (starting with a tag) find the index after the matching end tag
 export function getIndexOfClosingBrace(content, startPattern, endPattern) {
   let tagDepth = 0;// when this gets to 0 we are done
   let tmpContent = content.substr(1);
+
 
   // prime loop by finding next start tag
   let nextCloseNdx = tmpContent.indexOf(endPattern);
   let nextOpenNdx = tmpContent.indexOf(startPattern);
 
   if(nextCloseNdx ===  -1)
-    console.error('No Close tag');
+    console.trace(`No Close tag for startPattern: ${startPattern} and endPattern: ${endPattern} and content: ${content}`);
 
   // if there is a nextCloseNdx, but no openNdx, return the end of the tag.
   if(nextOpenNdx === -1 || nextOpenNdx > nextCloseNdx)
-    return nextCloseNdx + 4;
+    return nextCloseNdx + 4; // 4 not 3 because we sliced off the '<' in content
 
-  // Now we know that we have an inner tag ... or should if the syntax is correct
-
-  // we found an open tag, so we need a close tag. Set depth to 1
-  tagDepth = 1;
-
-  // add 1 so we will search passed the tag
+  // add 1 so we will search past the tag
   nextOpenNdx += 1;
   nextCloseNdx += 1;
 
@@ -64,8 +60,11 @@ export function getIndexOfClosingBrace(content, startPattern, endPattern) {
       // see if we found something, and add this new index to our accumulator
       if(tmpClosed > -1) {
         // add 1 because we need next search to be beyond this tag
-        nextCloseNdx += tmpClosed + 2;
+        nextCloseNdx += tmpClosed + 1;
         tagDepth -= 1;
+
+        if(tagDepth === 0)
+          return nextCloseNdx + 3;
       }
       else if(tagDepth > 0) {
         console.error('There is an unclosed tag', content);
@@ -78,6 +77,7 @@ export function getIndexOfClosingBrace(content, startPattern, endPattern) {
 
   if(nextCloseNdx === -1)
     console.error("ERROR: no closing tag! you are missing a '" + endPattern + "'");
+
 
   return nextCloseNdx;
 }
@@ -100,7 +100,9 @@ export function splitContent(content, tag) {
 
   while(openNdx > -1) {
     partial = content.slice(0, openNdx);
-    arr.push(partial);
+    if(partial)
+      arr.push(partial);
+
     content = content.slice(openNdx);
 
     // get the closeNdx despite inner open tags
@@ -110,6 +112,8 @@ export function splitContent(content, tag) {
     partial = content.slice(0, closeNdx);
     arr.push(partial);
     content = content.slice(closeNdx);
+
+    // get ready for next iteration
     openNdx = content.indexOf(startPattern);
 
     // on final pass, push the remainer of the content string

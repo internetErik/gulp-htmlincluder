@@ -7,10 +7,19 @@ var paths = {
 }
 
 function genericHtmlIncluder(path) {
+  const jsonInput = {};
   gulp.src(path)
-    .pipe(includer({}))
+    .pipe(includer({ jsonInput }))
     .pipe(gulp.dest(paths.htmlBuild))
 }
+
+gulp.task('broken', function() {
+  genericHtmlIncluder([
+    './test/html/broken.html',
+    './test/html/wrappers/*.html',
+    './test/html/components/*.html'
+  ])
+})
 
 gulp.task('simple', function() {
   genericHtmlIncluder([

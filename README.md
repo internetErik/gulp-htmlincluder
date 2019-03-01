@@ -118,7 +118,7 @@ A relative (to current file) path to a file.
 
 A path to data in a json object. For example:
 
-```json
+```
 {
   a: {
     b: {
@@ -146,7 +146,8 @@ For example:
 
 On an #each you can tell it how many times to repeat the inner content with a count attribute
 
-`<!--#each count="3" -->hello world<!--#endeach -->
+`<!--#each count="3" -->hello world<!--#endeach -->`
+
 
 ### Insert
 
@@ -479,8 +480,6 @@ Results
 
 
 ```
-
-
 
 #### With an array of objects
 
