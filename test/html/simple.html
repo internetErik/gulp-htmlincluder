@@ -1,6 +1,9 @@
-<!---#wrap path="./wrappers/_simple.html" -->
-This is a simple file with a wrap and some inserts
-<!--#data jsonPath="hello" rawJson="{jarl : 'hello world'}" default="jarlsense" -->
-<!--#jsonInsert jsonPath="hello" default="nonsense" -->
-<!--#insert path="./components/-text-insert.html" -->
-<!---#endwrap -->
+<!--#wrap path="./wrappers/_simple.html" -->
+  This is a simple file with a wrap and some inserts
+  <!--#data
+    jsonPath="<!--#jsonInsert jsonPath="hello" default="jarl" -->"
+    rawJson="{jarl : 'hello world'}"
+    default="jarlsense"
+  -->
+  <!--#insert path="./components/-text-insert.html" -->
+<!--#endwrap -->

@@ -5,7 +5,7 @@ import { File } from './util/file';
 import { buildAST } from './parse';
 
 module.exports = {
-  initialize : options => (console.log('options:', options), setOptions(options)),
+  initialize : options => setOptions(options),
   // puts files into hash maps
   hashFile : file => {
     const f = File(file);

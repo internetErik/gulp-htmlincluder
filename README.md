@@ -5,7 +5,7 @@
 
 ## What does this do?
 
-At it's most basic level, this allows you to build files out of other files by marking up your files in a particular way. It also lets you insert data into these files (from a json object).
+At it's most basic level, this allows you to build files out of other files by marking up your files in a particular way. It also lets you insert data into these files from a json object provided from outside.
 
 ## What was this intended to do?
 
@@ -585,6 +585,12 @@ something else
 ```
 
 ## More Complicated Examples
+
+## ToDo
+
+* Support arbitrarily nested tagging (e.g., <!--# <!--# --> -->)
+* Rewrite more recursively so the code is more managable and so extensible
+* Implement some form of caching so only changed files need be processed
 
 ## License
 
