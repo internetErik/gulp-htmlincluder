@@ -9,137 +9,6 @@ import {
   wrapFiles
 } from '../config';
 
-/*
-
-  string           - unparsed file
-  object           - node
-  array of objects - node list
-
-  1) convert a file (string) to a node
-  2) process the node
-    1) parse contents of node into a list of content and tags - both strings
-    2) resolve nested tags
-      - treat the string contents of a tag as a file
-    3) resolve tags to string
-      - each tag has its own process of being resolved
-  3) build string result by combining all child tags contents
-
- */
-
-// const insertFiles = { '/Users/erik/projects/gulp-htmlincluder/test/html/components/-base-component.html':
-//    { name: '-base-component.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-base-component.html',
-//      content:
-//       '<div>\n  This is a base component that may inherit something\n  <!--#data jsonPath="inheritedProperty" default="" -->\n</div>',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/components/-customized-component.html':
-//    { name: '-customized-component.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-customized-component.html',
-//      content:
-//       `<!--#insert\n  path="./-base-component.html"\n  rawJson="{\n    inheritedProperty: '<!--#data jsonPath="message" default="" -->',\n  }"\n-->`,
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/components/-list.html':
-//    { name: '-list.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-list.html',
-//      content:
-//       '<!--#each jsonPath="members" -->\n  <div>Name: <!--#data jsonPath="name" --></div>\n<!--#endeach -->',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/components/-tab-collection.html':
-//    { name: '-tab-collection.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-tab-collection.html',
-//      content:
-//       '<div class="tab-collection <!--#data jsonPath="className" -->">\n  <div class="tab-collection__tabs">\n    <!--#each jsonPath="tabs" -->\n      <div class="tabs__tab <!--#data jsonPath="className" -->" data-tab-id="<!--#data jsonPath="tabId" -->">\n        <!--#data jsonPath="displayName" -->\n      </div>\n    <!--#endeach -->\n  </div>\n  <div class="tab-collection__contents">\n    <!--#each jsonPath="tabs" -->\n    <div class="contents__container" data-tab-id="<!--#data jsonPath="tabId" -->">\n      <!--#insert path="<!--#data jsonPath="filePath" -->" -->\n    </div>\n    <!--#endeach -->\n  </div>\n</div>',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/components/-text-insert.html':
-//    { name: '-text-insert.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-text-insert.html',
-//      content:
-//       'This is just a simple block of text inserted from -test-insert.html',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/components/-with-json.html':
-//    { name: '-with-json.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/components/-with-json.html',
-//      content: '<!--#data jsonPath="text" default="hello world!" -->',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base:
-//          '/Users/erik/projects/gulp-htmlincluder/test/html/components/',
-//          } }
-// };
-
-// const wrapFiles = { '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/_simple.html':
-//    { name: '_simple.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/_simple.html',
-//      content:
-//       '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title>Simple Wrapper</title>\n</head>\n<body>\n  <!--#middle -->\n</body>\n</html>',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base: '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/',
-//         },
-//       },
-//   '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/_with-json.html':
-//    { name: '_with-json.html',
-//      path:
-//       '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/_with-json.html',
-//      content:
-//       '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <title><!--#data jsonPath="title" default="Wrapper With JSON" --></title>\n</head>\n<body>\n  <!--#middle -->\n</body>\n</html>',
-//      processed: false,
-//      file: {
-//         cwd: '/Users/erik/projects/gulp-htmlincluder',
-//         base: '/Users/erik/projects/gulp-htmlincluder/test/html/wrappers/',
-//          }
-//        },
-// };
-
-// const fakeFile = {
-//   name: 'simple.html',
-//   path: '/Users/erik/projects/gulp-htmlincluder/test/html/simple.html',
-//   content: `<!--#wrap path="./wrappers/_simple.html" -->\n  This is a simple file with a wrap and some inserts\n  <!--#data\n    jsonPath="<!--#jsonInsert jsonPath="hello" default="jarl" -->"\n    rawJson="{jarl : 'hello world'}"\n    default="jarlsense"\n  -->\n  <!--#insert path="./components/-text-insert.html" -->\n<!--#endwrap -->`,
-//   processed: false,
-//   file: {}
-// }
-
-// const fakeJson = {};
-
 // shape of our AST nodes
 const defaultNode = {
   type       : '',
@@ -147,6 +16,7 @@ const defaultNode = {
   originalContent: '',
   content    : '',
   parent     : {},
+  innerScope : null,
   children   : [], // list of sequential nodes wrapped in tag (or at topNode)
   processed  : false,
   nestedNodes : [], // nested tags - these need to be resolved before this tag is resolved
@@ -157,8 +27,9 @@ const defaultNode = {
 };
 
 // entry point for processing files
-export const buildAST = (file, json, parentNode) => {
-
+export const buildAST = (file, json, parent, innerScope) => {
+  console.log('file.content')
+  console.log(file.content)
   // convert string into object
   const topNode = {
     ...defaultNode,
@@ -166,8 +37,15 @@ export const buildAST = (file, json, parentNode) => {
     file,
     originalContent: file.content,
     content : file.content,
-    ...(parentNode ? { parent : parentNode } : {}),
+    ...(parent     ? { parent }     : {}),
+    ...(innerScope ? { innerScope } : {}),
   };
+
+  // don't do work if there are no tags in the file
+  if(topNode.originalContent.indexOf('<!--#') === -1) {
+    topNode.processed = true;
+    return topNode;
+  }
 
   // process children of the node
   processNode(topNode, json);
@@ -181,6 +59,7 @@ export const buildAST = (file, json, parentNode) => {
 //
 const processNode = (node, json) => {
   if(node.processed) return;
+
   console.log('processNode: type = ', node.type);
 
   // the contents of a node may contain more nested nodes
@@ -188,11 +67,9 @@ const processNode = (node, json) => {
   const contentArr = splitContent(node.content).filter(c => c !== '');
 
   // convert array of strings to nodes
-  node.nestedNodes = (contentArr[0] !== node.content)
-    ? buildNodes(node, contentArr, json)
-    : [];
+  node.nestedNodes = buildNodes(node, contentArr, json);
 
-   resolveNode(node, json);
+  resolveNode(node, json);
 }
 
 //
@@ -214,6 +91,7 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
       type,
       parent,
       file    : parent.file,
+      innerScope : parent.innerScope,
       originalContent: content,
       content,
     };
@@ -271,6 +149,7 @@ const loadNodeAttributes = node => {
   attrs.forEach(attr => {
     if(hasTagAttribute(attr, node.content)) {
       const value = getTagAttribute(attr, node.content);
+      if(attr === 'rawJson') console.log('attr: ', node.content);
       node.attributes[attr] = attr === 'rawJson' ? processRawJson(value) : value;
     }
   })
@@ -302,19 +181,13 @@ const nodeProcessors = {
   //
   insert : (node, json) => {
     console.log('processing insert');
-    const { file } = node;
+    const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
       console.warn(`WARNING while processing file '${file.path}': insert tag with no path attribute`);
       node.content = '';
       return;
     }
-    // set scope for inserted file
-    node.innerScope = (
-        jsonPath ? getDataFromJsonPath(jsonPath, json)
-      : rawJson  ? rawJson
-      : {}
-    );
 
     // get filename for inserted file
     const filename = buildPathFromRelativePath(file.path, path);
@@ -327,29 +200,32 @@ const nodeProcessors = {
     }
 
     // load contents from file
-    node.content = insertFiles[filename].content;
-    node.type = 'top-node';
+    const insertFile = insertFiles[filename];
+
+    // set scope for inserted file
+    const newInnerScope = (
+        rawJson    && jsonPath ? (console.log('1'),getDataFromJsonPath(jsonPath, rawJson))
+      : innerScope && jsonPath ? (console.log('2'),getDataFromJsonPath(jsonPath, innerScope))
+      : rawJson  ? rawJson
+      : jsonPath ? getDataFromJsonPath(jsonPath, json)
+      : void(0)
+    );
+    console.log('*** new inner scope: ', jsonPath, rawJson, innerScope);
+    const insertNode = buildAST(insertFile, json, node, newInnerScope);
 
     // process contents to get children
-    processNode(node, json);
+    node.content = insertNode.content;
   },
   //
   wrap : (node, json) => {
     console.log('processing wrap');
-    const { file } = node;
+    const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
       console.warn(`WARNING while processing file '${file.path}': wrap tag with no path attribute`);
       node.content = '';
       return;
     }
-
-    // set scope for inserted file
-    node.innerScope = (
-        jsonPath ? getDataFromJsonPath(jsonPath, json)
-      : rawJson  ? rawJson
-      : {}
-    );
 
     // get filename for inserted file
     const filename = buildPathFromRelativePath(file.path, path);
@@ -366,11 +242,20 @@ const nodeProcessors = {
     // handle children content
     node.children.forEach(childNode => processNode(childNode, json))
     node.content = joinContent(node.children);
-    console.log(node.content);
 
     // load contents from file
     const wrapFile = wrapFiles[filename];
-    const wrapNode = buildAST(wrapFile, json, node);
+
+    // set scope for inserted file
+    const newInnerScope = (
+        rawJson && jsonPath ? getDataFromJsonPath(jsonPath, rawJson)
+      : innerScope && jsonPath ? getDataFromJsonPath(jsonPath, innerScope)
+      : rawJson  ? rawJson
+      : jsonPath ? getDataFromJsonPath(jsonPath, json)
+      : void(0)
+    );
+
+    const wrapNode = buildAST(wrapFile, json, node, newInnerScope);
 
     // process contents to get children
     node.content = wrapNode.content;
@@ -381,14 +266,17 @@ const nodeProcessors = {
     node.content = node.parent.parent.content;
   },
   data : (node, json) => {
-    console.log('processing data')
+    const { innerScope } = node;
+    console.log('processing data', innerScope);
     const { jsonPath, rawJson } = node.attributes;
     const defaultVal = node.attributes.default;
-    if(!rawJson || !jsonPath) {
+    if(!jsonPath || (!rawJson && !innerScope)) {
+      console.warn(`WARNING while processing file '${file.path}': data tag with no data to look up`);
       node.content = '';
       return;
     }
-    const data = getDataFromJsonPath(jsonPath, rawJson);
+    const values = rawJson || innerScope;
+    const data = getDataFromJsonPath(jsonPath, values);
     node.content = data || defaultVal || '';
   },
   jsonInsert : (node, json) => {
@@ -404,10 +292,55 @@ const nodeProcessors = {
   },
   each : (node, json) => {
     console.log('processing each');
+    const { count, jsonPath, rawJson } = node.attributes;
+    if(!count && !jsonPath && !Array.isArray(rawJson)) {
+      console.warn(`WARNING while processing file '${file.path}': each tag with attribute problems: count, jsonPath and rawJsonnot array`);
+      node.content = '';
+      return;
+    }
+
+    const values = rawJson || json;
+    const jsonData = jsonPath ? getDataFromJsonPath(jsonPath, values) : void(0);
+    const data = (
+        Array.isArray(values)   ? values
+      : Array.isArray(jsonData) ? getDataFromJsonPath(jsonPath, jsonData)
+      : void(0)
+    );
+
+    if(!data) {
+      console.warn(`WARNING while processing file '${file.path}': each tag no data to iterate over`);
+      node.content = '';
+      return;
+    }
+
+    const tmpContent = [];
+
+    for(
+      let i = 0;
+         (!count || (count && i < count))
+      && (!data || (data && i < data.length));
+      i++)
+    {
+      // clone children
+      const tmpChildren = node.children.map(c => ({
+        ...c,
+        ...(data ? { innerScope : data[i] } : {}),
+      }))
+      // handle children content
+      tmpChildren.forEach(childNode => processNode(childNode, json))
+      tmpContent.push(joinContent(tmpChildren));
+    }
+
+    node.content = tmpContent.join('');
 
   },
   if : (node, json) => {
     console.log('processing if');
+    const { count, jsonPath, rawJson } = node.attributes;
+    if(!jsonPath) {
+      node.content = '';
+      return;
+    }
 
   },
 }
