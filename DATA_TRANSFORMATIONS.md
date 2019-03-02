@@ -12,42 +12,17 @@
   world
 <!--#endwrap -->
 
-The array (pseudo-code)
-[
-  wrap-inserted title,
-  wrap-inserted header,
-  hello,
-  inserted text,
-  [// each
-    'each'
-    [ data,
-      text,
-      [// if true
-        statement,
-      ],
-    ],
-    [ data,
-      text,
-      [// if false
-        statement,
-      ],
-    ],
-    [ data,
-      text,
-      [// if true
-        statement,
-      ],
-    ],
-    [ data,
-      text,
-      [// if false
-        statement,
-      ],
-    ],
-  ],
-  world,
-  wrap-inserted footer,
-]
+Rules:
+* Try to resolve leaf nodes first
+* Resolve tags before their children
+
+Process:
+* Break file into parts (tag non-tag)
+* Iterate through collection
+  * Build node
+  * If the tag should children
+    * recurse to iterating function
+
 
 ## Arbitrarily Nested Tags
 

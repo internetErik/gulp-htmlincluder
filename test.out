@@ -1,13 +1,51 @@
-[11:19:56] Using gulpfile ~/projects/gulp-htmlincluder/gulpfile.js
-[11:19:56] Starting 'simple'...
-[11:19:56] Finished 'simple' after 10 ms
+[20:29:42] Using gulpfile ~/projects/gulp-htmlincluder/gulpfile.js
+[20:29:42] Starting 'simple'...
+[20:29:42] Finished 'simple' after 8.76 ms
+processNode: type =  topNode
+processNode: type =  wrap
+processing wrap
+processNode: type =  data
+processNode: type =  jsonInsert
+processing jsonInsert
+processing data
+processNode: type =  insert
+processing insert
+processNode: type =  top-node
 
   This is a simple file with a wrap and some inserts
-  !--#data
-    jsonPath="<!--#jsonInsert jsonPath="hello" default="jarl" -->"
-    rawJson="{jarl : 'hello world'}"
-    default="jarlsense"
-  -->
-  !--#insert path="./components/-text-insert.html" -->
+  hello world
+  This is just a simple block of text inserted from -test-insert.html
 
-processing data
+processNode: type =  topNode
+processNode: type =  middle
+processing middle
+==================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Wrapper</title>
+</head>
+<body>
+  
+  This is a simple file with a wrap and some inserts
+  hello world
+  This is just a simple block of text inserted from -test-insert.html
+
+</body>
+</html>
+==================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Wrapper</title>
+</head>
+<body>
+  
+  This is a simple file with a wrap and some inserts
+  hello world
+  This is just a simple block of text inserted from -test-insert.html
+
+</body>
+</html>

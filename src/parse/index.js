@@ -144,6 +144,7 @@ import {
 const defaultNode = {
   type       : '',
   file       : {},
+  originalContent: '',
   content    : '',
   parent     : {},
   children   : [], // list of sequential nodes wrapped in tag (or at topNode)
@@ -156,48 +157,31 @@ const defaultNode = {
 };
 
 // entry point for processing files
-export const buildAST = (file, json) => {
+export const buildAST = (file, json, parentNode) => {
 
   // convert string into object
   const topNode = {
     ...defaultNode,
     type    : 'topNode',
     file,
+    originalContent: file.content,
     content : file.content,
+    ...(parentNode ? { parent : parentNode } : {}),
   };
 
   // process children of the node
   processNode(topNode, json);
 
-  // console.log('==================================')
-  // console.log(topNode.content);
-
-  return topNode;
-}
-
-// entry point for processing files
-export const buildWrapAST = (file, parent, json) => {
-
-  // convert string into object
-  const topNode = {
-    ...defaultNode,
-    type    : 'topNode',
-    file,
-    parent,
-    content : file.content,
-  };
-
-  // process children of the node
-  processNode(topNode, json);
-
-  // console.log('==================================')
-  // console.log(topNode.content);
+  console.log('==================================')
+  console.log(topNode.content);
 
   return topNode;
 }
 
 //
 const processNode = (node, json) => {
+  if(node.processed) return;
+  console.log('processNode: type = ', node.type);
 
   // the contents of a node may contain more nested nodes
   // break these up into an array of mixed textContent nodes and tags
@@ -205,15 +189,14 @@ const processNode = (node, json) => {
 
   // convert array of strings to nodes
   node.nestedNodes = (contentArr[0] !== node.content)
-    ? parseNodesToAst(node, contentArr, json)
+    ? buildNodes(node, contentArr, json)
     : [];
 
-// console.log('post nested: ', node.type)
-  resolveNode(node, json);
+   resolveNode(node, json);
 }
 
 //
-const parseNodesToAst = (parent, contentArr, json, closeTag) => {
+const buildNodes = (parent, contentArr, json, closeTag) => {
   const nodes = [];
 
   while(contentArr.length > 0) {
@@ -231,6 +214,7 @@ const parseNodesToAst = (parent, contentArr, json, closeTag) => {
       type,
       parent,
       file    : parent.file,
+      originalContent: content,
       content,
     };
 
@@ -242,23 +226,18 @@ const parseNodesToAst = (parent, contentArr, json, closeTag) => {
     }
 
     // remove leading character ('<') so the inner contents can be parsed properly
-    node.content = content.slice(1);
+    node.content = node.originalContent.slice(1);
 
     // the contents inside a node can be treated like new little documents
 
     // if this is a node that has children build them up, removing them
     // from the split up array
     node.children = (
-        type === 'wrap' ? parseNodesToAst(node, contentArr, json, '<!--#endwrap')
-      : type === 'each' ? parseNodesToAst(node, contentArr, json, '<!--#endeach')
-      : type === 'if'   ? parseNodesToAst(node, contentArr, json, '<!--#endif')
+        type === 'wrap' ? buildNodes(node, contentArr, json, '<!--#endwrap')
+      : type === 'each' ? buildNodes(node, contentArr, json, '<!--#endeach')
+      : type === 'if'   ? buildNodes(node, contentArr, json, '<!--#endif')
       : []
     );
-
-    // handle all nested node
-    // skip if we are building up children
-    if(!closeTag)
-      processNode(node, json);
 
     nodes.push(node);
   }
@@ -270,14 +249,10 @@ const parseNodesToAst = (parent, contentArr, json, closeTag) => {
 const resolveNode = (node, json) => {
   if(node.type === 'textContent') return;
 
-  if(node.children.length > 0) {
-    
-  }
-
   // resolve nested tags
   if(node.nestedNodes.length > 0) {
-    node.nestedNodes.forEach(node => resolveNode(node, json));
-    node.content = node.nestedNodes.map(c => c.content).join('');
+    node.nestedNodes.forEach(node => processNode(node, json));
+    node.content = joinContent(node.nestedNodes);
   }
 
   // load and resolve attribute values
@@ -288,6 +263,17 @@ const resolveNode = (node, json) => {
   processor(node, json);
 
   node.processed = true;
+}
+
+// loads values for tags into node object
+const loadNodeAttributes = node => {
+  const attrs = nodeAttributes[node.type] || [];
+  attrs.forEach(attr => {
+    if(hasTagAttribute(attr, node.content)) {
+      const value = getTagAttribute(attr, node.content);
+      node.attributes[attr] = attr === 'rawJson' ? processRawJson(value) : value;
+    }
+  })
 }
 
 // check for tag and return node type
@@ -302,17 +288,6 @@ const findNodeType = content => (
 : 'textContent'
 )
 
-// loads values for tags into node object
-const loadNodeAttributes = node => {
-  const attrs = nodeAttributes[node.type] || [];
-  attrs.forEach(attr => {
-    if(hasTagAttribute(attr, node.content)) {
-      const value = getTagAttribute(attr, node.content);
-      node.attributes[attr] = attr === 'rawJson' ? processRawJson(value) : value;
-    }
-  })
-}
-
 const joinContent = nodeList => nodeList.map(c => c.content).join('')
 
 // the functions that processes each node
@@ -326,6 +301,7 @@ const nodeProcessors = {
   textContent : (node, json) => { console.warn('WARNING: Why are we processing a textContent?') },
   //
   insert : (node, json) => {
+    console.log('processing insert');
     const { file } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
@@ -352,12 +328,14 @@ const nodeProcessors = {
 
     // load contents from file
     node.content = insertFiles[filename].content;
+    node.type = 'top-node';
 
     // process contents to get children
     processNode(node, json);
   },
   //
   wrap : (node, json) => {
+    console.log('processing wrap');
     const { file } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
@@ -383,29 +361,29 @@ const nodeProcessors = {
       return;
     }
 
-console.log(joinContent(node.children));
+    // we need to process the children before we bring in the file
+
     // handle children content
     node.children.forEach(childNode => processNode(childNode, json))
-
     node.content = joinContent(node.children);
+    console.log(node.content);
 
     // load contents from file
     const wrapFile = wrapFiles[filename];
-    const wrapNode = buildWrapAST(wrapFile, node, json);
-// console.log(wrapNode);
-fdd +sdfds;
+    const wrapNode = buildAST(wrapFile, json, node);
 
     // process contents to get children
-    processNode(node, json);
+    node.content = wrapNode.content;
   },
   //
   middle : (node, json) => {
-    console.log(joinContent(node.parent.parent.children));
+    console.log('processing middle');
+    node.content = node.parent.parent.content;
   },
   data : (node, json) => {
+    console.log('processing data')
     const { jsonPath, rawJson } = node.attributes;
     const defaultVal = node.attributes.default;
-    console.log('processing data');
     if(!rawJson || !jsonPath) {
       node.content = '';
       return;
@@ -414,6 +392,7 @@ fdd +sdfds;
     node.content = data || defaultVal || '';
   },
   jsonInsert : (node, json) => {
+    console.log('processing jsonInsert')
     const { jsonPath } = node.attributes;
     const defaultVal = node.attributes.default;
     if(!jsonPath) {
@@ -424,9 +403,11 @@ fdd +sdfds;
     node.content = data || defaultVal || '';
   },
   each : (node, json) => {
+    console.log('processing each');
 
   },
   if : (node, json) => {
+    console.log('processing if');
 
   },
 }
