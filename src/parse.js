@@ -6,7 +6,7 @@ import {
   options,
   devOptions,
   insertPattern,
-} from '../config';
+} from './config';
 
 // shape of our AST nodes
 const getDefaultNode = () => ({
