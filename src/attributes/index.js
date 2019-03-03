@@ -1,19 +1,16 @@
 // does a tag have an attribute? (attributeName="value")
-export function hasTagAttribute(attr, content) {
-  // strip out inner tags
-  // check attribute existence
-  return content.indexOf(attr + '="') > -1;
-}
+export const hasTagAttribute =
+  (attr, content) => content.indexOf(attr + '="') > -1
 
 // get the value of an attribute (attributeName="value")
-export function getTagAttribute(attr, content) {
-  var fndx = -1,
+export const getTagAttribute = (attr, content) => {
+  let fndx = -1,
       lndx = -1;
 
   fndx = content.indexOf(attr + '="');
   if(fndx === -1) {
     console.warn("Warning: no tag of name `" + attr + "` found in the following content: `" + content + "`")
-    return "";
+    return '';
   }
 
   content = content.slice(fndx + attr.length + 2);
@@ -24,10 +21,10 @@ export function getTagAttribute(attr, content) {
 
 // set the value of an attribute (attributeName="value")
 export function setTagAttribute(attr, content, value) {
-  var fndx = -1,
+  let fndx = -1,
       lndx = -1,
-      left = "",
-      right = "";
+      left = '',
+      right = '';
 
   fndx = content.indexOf(attr + '="');
   left = content.slice(0, fndx + attr.length + 2);
@@ -40,10 +37,10 @@ export function setTagAttribute(attr, content, value) {
 
 // rename one attribute name to another (attributeName="value")
 export function changeTagAttributeName(attr, content, newAttr) {
-  var fndx = -1,
+  let fndx = -1,
       lndx = -1,
-      left = "",
-      right = "";
+      left = '',
+      right = '';
 
   fndx = content.indexOf(attr + '="');
   left = content.slice(0, fndx);
@@ -53,10 +50,10 @@ export function changeTagAttributeName(attr, content, newAttr) {
 
 // removes an attribute from a tag along with its value (attributeName="value")
 export function removeTagAttribute(attr, content) {
-  var fndx = -1,
+  let fndx = -1,
       lndx = -1,
-      left = "",
-      right = "",
+      left = '',
+      right = '',
       middle = content;
 
   if(hasTagAttribute(attr, middle)) {
@@ -71,7 +68,7 @@ export function removeTagAttribute(attr, content) {
     }
     else {
       right = right.slice(lndx + 1);
-      middle = "";
+      middle = '';
     }
   }
   return left + middle + right;
@@ -79,13 +76,13 @@ export function removeTagAttribute(attr, content) {
 
 // adds an attribute from a tag along with a value (attributeName="value")
 export function addTagAttribute(attr, content, value) {
-  var fndx = -1,
+  let fndx = -1,
       lndx = -1,
-      left = "",
-      right = "",
+      left = '',
+      right = '',
       middle = content;
 
-  lndx = middle.indexOf(" ");
+  lndx = middle.indexOf(' ');
   if(lndx > -1) {
     left = middle.slice(0, lndx);
     right = middle.slice(lndx);

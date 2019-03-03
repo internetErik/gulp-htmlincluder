@@ -18,7 +18,10 @@ export function processRawJson(jsonString) {
     eval('jsonData = ' + jsonString);
   }
   catch(e) {
-    console.error('ERROR: Poorly formatted rawJson string: ' + jsonString + '\n\n This must be valid JavaScript.');
+    console.error(`ERROR: Poorly formatted rawJson string:
+      ${jsonString}
+      This must be valid JavaScript.
+    `);
   }
 
   return jsonData;

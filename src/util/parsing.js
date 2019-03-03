@@ -2,9 +2,9 @@ import { toSafeJsonString } from '../json';
 import { options } from '../config';
 
 // given a jsonObject and a path, return the data pointed at
-export function getDataFromJsonPath(jsonPath, jsonObj) {
-  var json = jsonObj || options.jsonInput;
-  var result;
+export const getDataFromJsonPath = (jsonPath, jsonObj) => {
+  const json = jsonObj || options.jsonInput;
+  let result;
 
   if(jsonPath === '*') return options.jsonInput;
   if(jsonPath === 'this') return json;
@@ -18,7 +18,7 @@ export function getDataFromJsonPath(jsonPath, jsonObj) {
 }
 
 // Given some content (starting with a tag) find the index after the matching end tag
-export function getIndexOfClosingBrace(content, startPattern, endPattern) {
+export const getIndexOfClosingBrace = (content, startPattern, endPattern) => {
   let tagDepth = 0;// when this gets to 0 we are done
   let tmpContent = content.substr(1);
 
@@ -67,7 +67,7 @@ export function getIndexOfClosingBrace(content, startPattern, endPattern) {
           return nextCloseNdx + 3;
       }
       else if(tagDepth > 0) {
-        console.error('There is an unclosed tag', content);
+        console.error(`ERROR: there is an unclosed tag - content is ${content}`);
         break;
       }
     }
@@ -76,15 +76,14 @@ export function getIndexOfClosingBrace(content, startPattern, endPattern) {
   nextCloseNdx += 4;
 
   if(nextCloseNdx === -1)
-    console.error("ERROR: no closing tag! you are missing a '" + endPattern + "'");
-
+    console.error(`ERROR: no closing tag! you are missing a '${endPattern}'`);
 
   return nextCloseNdx;
 }
 
 // Splits a string into an array where special tags are on their own
 // can optionally only split it up based on a particular tag
-export function splitContent(content, tag) {
+export const splitContent = (content, tag) => {
   let arr = [],
       openNdx = -1,
       closeNdx = -1,
@@ -133,7 +132,7 @@ const FILE_PATH_NDX = 2;
 const CONTENT_NDX   = 3;
 
 // returns the index of the closing tag for a given opening tag
-export function findIndexOfClosingTag(openTag, closeTag, startNdx, arr) {
+export const findIndexOfClosingTag = (openTag, closeTag, startNdx, arr) => {
   var endNdx = -1;
   var openCount = 1;
 

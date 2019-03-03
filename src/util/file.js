@@ -25,7 +25,7 @@ function fixFilePathForOS(path) {
 
 // given the current directory and a relative path, build the complete path
 // to the relative path
-export function buildPathFromRelativePath(cdir, fdir) {
+export const buildPathFromRelativePath = (cdir, fdir) => {
   var dir,
       dirChar = (isWin) ? '\\' : '/';
 
@@ -39,13 +39,7 @@ export function buildPathFromRelativePath(cdir, fdir) {
       (e === '..') ? dir.pop() : (e !== '.' && e !== '') ? dir.push(e) : void 0;
     });
   dir = dir.join(dirChar);
-  if(devOptions.printPaths) {
-    console.log("********buildPathFromRelativePath********")
-    console.log("cdir  : ", cdir)
-    console.log("fdir  : ", fdir)
-    console.log("result: ", dir)
-    console.log("********end buildPathFromRelativePath********")
-  }
+
   return dir;
 }
 

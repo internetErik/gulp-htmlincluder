@@ -14,17 +14,17 @@ Loop through some data and print it
   jsonPath="arr"
   rawJson="{
     arr: [
-      { data: '1' },
-      { data: '2' },
-      { data: '3' },
-      { data: '4' },
-      { data: '5' },
-      { data: '6' },
-      { data: '7' },
+      { num: '1' },
+      { num: '2' },
+      { num: '3' },
+      { num: '4' },
+      { num: '5' },
+      { num: '6' },
+      { num: '7' },
     ]
   }"
 -->
-  <div><!--#data jsonPath="data" --></div>
+  <div><!--#data jsonPath="num" --></div>
 <!--#endeach -->
 
 <!--#each
@@ -52,6 +52,7 @@ Loop through some data and print it
 
 <!--#insert
   path="./components/-list.html"
+  jsonPath="members"
   rawJson="{
     members: [
       { name: 'member 1'},

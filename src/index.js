@@ -1,8 +1,5 @@
-import processClip from './tags/clip';
-import processContent from './tags';
 import { configureFiles, setOptions, pageFiles, options } from './config';
-import { File } from './util/file';
-import { buildAST } from './parse';
+import { processFile } from './parse';
 
 module.exports = {
   initialize : options => setOptions(options),
@@ -17,13 +14,9 @@ module.exports = {
   },
   // builds string
   buildFileResult : callback => pageFiles.map(file => {
-    const AST = buildAST(file, options.jsonInput || {});
-
-    file.content = processContent(file.content, file.path, options.jsonInput || {});
-
-    // When an unknown tag is found it is changed to <!--!unknwn-tag# so that it doesn't
-    // continually get found. This will undo those changes
-    file.content = file.content.replace(/<!--!unknwn-tag#/g, '<!--#');
+    const AST = processFile(file, options.jsonInput || {});
+    file.content = AST.content;
+    console.log(file.content);
     file.processed = true;
 
     if(callback)
@@ -32,3 +25,46 @@ module.exports = {
     return file;
   }),
 };
+
+const isWin = /^win/.test(process.platform);
+
+function File(file) {
+  var f = {
+    name : '',
+    path : file.path,
+    content : file.contents.toString('utf8').trim(),
+    processed : false,
+    file : file
+  };
+
+  f.name = (isWin) ? file.path.split('\\') : file.path.split('/');
+  f.name = f.name[f.name.length-1];
+
+  return f;
+}
+
+// <!--#clipbefore -->
+// <!--#clipafter -->
+// <!--#clipbetween -->
+// <!--#endclipbetween -->
+// This runs first, since all of the clipped areas will completely be removed
+function processClip(file) {
+  var tmp;
+
+  if(file.content.indexOf('<!--#clipbefore') > -1) {
+
+    file.content = file.content
+            .split(/<!--#clipbefore\s*-->/)
+            .splice(1)[0]
+            .split('<!--#clipafter')
+            .splice(0,1)[0];
+  }
+
+  if(file.content.indexOf('<!--#clipbetween') > -1) {
+
+    tmp = file.content
+        .split(/<!--#clipbetween\s*-->/);
+
+    file.content = tmp[0] + tmp[1].split(/<!--#endclipbetween\s*-->/)[1];
+  }
+}

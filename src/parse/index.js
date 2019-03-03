@@ -1,37 +1,31 @@
-import { splitContent } from '../util/parsing';
-import { hasTagAttribute, getTagAttribute } from '../attributes';
-import { processRawJson } from '../json';
-import { buildPathFromRelativePath } from '../util/file';
 import {
   jsonPathAttribute,
   filePathAttribute,
   insertFiles,
-  wrapFiles
+  wrapFiles,
+  options,
+  devOptions,
+  insertPattern,
 } from '../config';
 
 // shape of our AST nodes
-const defaultNode = {
-  type       : '',
-  file       : {},
-  originalContent: '',
-  content    : '',
-  parent     : {},
-  innerScope : null,
-  children   : [], // list of sequential nodes wrapped in tag (or at topNode)
-  processed  : false,
-  nestedNodes : [], // nested tags - these need to be resolved before this tag is resolved
-  attributes : {}, // attributes on tag
-  innerScope : {},
-  jsonPath   : '',
-  json       : {}, // json values used for this tag
-};
+const getDefaultNode = () => ({
+  type            : '',
+  file            : {},
+  originalContent : '',
+  content         : '',
+  parent          : {},
+  innerScope      : null,
+  children        : [], // list of sequential nodes wrapped in tag (or at topNode)
+  nestedNodes     : [], // nested tags - these need to be resolved before this tag is resolved
+  attributes      : {}, // attributes on tag
+})
 
 // entry point for processing files
-export const buildAST = (file, json, parent, innerScope) => {
-
+export const processFile = (file, json, parent, innerScope) => {
   // convert string into object
   const topNode = {
-    ...defaultNode,
+    ...getDefaultNode(),
     type    : 'topNode',
     file,
     originalContent: file.content,
@@ -41,25 +35,18 @@ export const buildAST = (file, json, parent, innerScope) => {
   };
 
   // don't do work if there are no tags in the file
-  if(topNode.originalContent.indexOf('<!--#') === -1) {
-    topNode.processed = true;
+  if(topNode.originalContent.indexOf('<!--#') === -1)
     return topNode;
-  }
 
   // process children of the node
   processNode(topNode, json);
-
-  console.log('==================================')
-  console.log(topNode.content);
 
   return topNode;
 }
 
 //
 const processNode = (node, json) => {
-  if(node.processed) return;
-
-  console.log('processNode: type = ', node.type);
+  if(node.type === 'textContent') return;
 
   // the contents of a node may contain more nested nodes
   // break these up into an array of mixed textContent nodes and tags
@@ -78,7 +65,7 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
   while(contentArr.length > 0) {
     const content = contentArr.shift();
 
-    // if we find the close tag, then close this
+    // if we find the close tag, then we are done with our search
     if(closeTag && content.indexOf(closeTag) === 0)
       return nodes;
 
@@ -86,7 +73,7 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
     const type = findNodeType(content);
 
     const node = {
-      ...defaultNode,
+      ...getDefaultNode(),
       type,
       parent,
       file            : parent.file,
@@ -97,7 +84,6 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
 
     // if this is a text node, we're set
     if(type === 'textContent') {
-      node.processed = true;
       nodes.push(node);
       continue;
     }
@@ -119,38 +105,46 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
     nodes.push(node);
   }
 
+  // We should never get here while looking for a closing tag
+  if(closeTag)
+    console.warn(`WARNING while processing file '${parent.file.path}': there is a missing tag`);
+
   return nodes;
 }
 
 //
 const resolveNode = (node, json) => {
-  if(node.type === 'textContent') return;
-
   // resolve nested tags
   if(node.nestedNodes.length > 0) {
     node.nestedNodes.forEach(node => processNode(node, json));
     node.content = joinContent(node.nestedNodes);
   }
 
-  // load and resolve attribute values
-  loadNodeAttributes(node);
-
   // process node so that content is resolved
-  const processor = nodeProcessors[node.type] || (() =>{});
-  processor(node, json);
+  const processor = nodeProcessors[node.type];
 
-  node.processed = true;
+  // There is a problem if we found no processor
+  if(!processor) {
+    console.warn(`WARNING while processing file '${node.file.path}': there is no processor for type '${node.type}'`);
+    return;
+  }
+
+  // load and resolve attribute values
+  node.attributes = loadNodeAttributes(node);
+
+  processor(node, json);
 }
 
 // loads values for tags into node object
 const loadNodeAttributes = node => {
   const attrs = nodeAttributes[node.type] || [];
-  attrs.forEach(attr => {
-    if(hasTagAttribute(attr, node.content)) {
-      const value = getTagAttribute(attr, node.content);
-      node.attributes[attr] = attr === 'rawJson' ? processRawJson(value) : value;
+  return attrs.reduce((acc, attr) => {
+    if(hasTagAttribute(attr, node.originalContent)) {
+      const value = getTagAttribute(attr, node.originalContent);
+      acc[attr] = (attr === 'rawJson') ? processRawJson(value) : value;
     }
-  })
+    return acc;
+  }, {})
 }
 
 // check for tag and return node type
@@ -172,14 +166,11 @@ const joinContent = nodeList => nodeList.map(c => c.content).join('')
 // these assume that they have all their nested nodes resolved and attributes loaded
 const nodeProcessors = {
   //
-  topNode : (node, json) => {
-    node.content = joinContent(node.nestedNodes);
-  },
+  topNode : (node, json) => node.content = joinContent(node.nestedNodes),
   //
-  textContent : (node, json) => { console.warn('WARNING: Why are we processing a textContent?') },
+  textContent : (node, json) => console.warn('WARNING: Why are we processing a textContent?'),
   //
   insert : (node, json) => {
-    console.log('processing insert');
     const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
@@ -199,7 +190,7 @@ const nodeProcessors = {
     }
 
     // load contents from file
-    const insertFile = insertFiles[filename];
+    const insertFile = { ...insertFiles[filename] };
 
     // set scope for inserted file
     const newInnerScope = (
@@ -210,18 +201,17 @@ const nodeProcessors = {
       : void(0)
     );
 
-    const insertNode = buildAST(insertFile, json, node, newInnerScope);
+    const insertNode = processFile(insertFile, json, node, newInnerScope);
 
     // process contents to get children
     node.content = insertNode.content;
   },
   //
   wrap : (node, json) => {
-    console.log('processing wrap');
     const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
-      console.warn(`WARNING while processing file '${file.path}': wrap tag with no path attribute`);
+      console.warn(`WARNING while processing file '${node.file.path}': wrap tag with no path attribute`);
       node.content = '';
       return;
     }
@@ -231,7 +221,7 @@ const nodeProcessors = {
 
     // see if file we are loading exists
     if(!wrapFiles[filename]) {
-      console.warn(`WARNING while processing file '${file.path}': wrap file '${filename}' does not exist`);
+      console.warn(`WARNING while processing file '${node.file.path}': wrap file '${filename}' does not exist`);
       node.content = '';
       return;
     }
@@ -243,7 +233,7 @@ const nodeProcessors = {
     node.content = joinContent(node.children);
 
     // load contents from file
-    const wrapFile = wrapFiles[filename];
+    const wrapFile = { ...wrapFiles[filename] };
 
     // set scope for inserted file
     const newInnerScope = (
@@ -254,33 +244,29 @@ const nodeProcessors = {
       : void(0)
     );
 
-    const wrapNode = buildAST(wrapFile, json, node, newInnerScope);
+    const wrapNode = processFile(wrapFile, json, node, newInnerScope);
 
     // process contents to get children
     node.content = wrapNode.content;
   },
   //
-  middle : (node, json) => {
-    console.log('processing middle');
-    node.content = node.parent.parent.content;
-  },
+  middle : (node, json) => node.content = node.parent.parent.content,
+  //
   data : (node, json) => {
-    const { innerScope } = node;
-    console.log('processing data', innerScope);
+    const { innerScope, file } = node;
     const { jsonPath, rawJson } = node.attributes;
     const defaultVal = node.attributes.default;
-    if(!jsonPath || (!rawJson && !innerScope)) {
-      console.warn(`WARNING while processing file '${file.path}': data tag with no data to look up`);
+    if(!jsonPath || (!rawJson && !innerScope && !defaultVal)) {
+      console.warn(`WARNING while processing file '${file.path}': data tag with no data to look up for content '${node.originalContent}'`);
       node.content = '';
       return;
     }
     const values = rawJson || innerScope;
-    console.log('VALUES: ', values)
     const data = getDataFromJsonPath(jsonPath, values);
     node.content = data || defaultVal || '';
   },
+  //
   jsonInsert : (node, json) => {
-    console.log('processing jsonInsert')
     const { jsonPath } = node.attributes;
     const defaultVal = node.attributes.default;
     if(!jsonPath) {
@@ -290,18 +276,18 @@ const nodeProcessors = {
     const data = getDataFromJsonPath(jsonPath, json);
     node.content = data || defaultVal || '';
   },
+  //
   each : (node, json) => {
-    console.log('processing each');
-    const { file } = node;
+    const { file, innerScope } = node;
     const { count, jsonPath, rawJson } = node.attributes;
-    if(!count && !jsonPath && !Array.isArray(rawJson)) {
-      console.warn(`WARNING while processing file '${file.path}': each tag with attribute problems: count, jsonPath and rawJsonnot array`);
+    if(!count && !jsonPath && !Array.isArray(rawJson) && !Array.isArray(innerScope)) {
+      console.warn(`WARNING while processing file '${file.path}': each tag with attribute problems: count, jsonPath and rawJson and innerScope are not arrays`);
       node.content = '';
       return;
     }
 
     // determine what data we are using
-    const values = rawJson || json;
+    const values = rawJson || node.innerScope || json;
     const jsonData = jsonPath ? getDataFromJsonPath(jsonPath, values) : void(0);
     const data = (
         Array.isArray(values)   ? values
@@ -309,36 +295,45 @@ const nodeProcessors = {
       : void(0)
     );
 
+    if(!data && !count) {
+      node.content = '';
+      return;
+    }
+
     // build up nodes and bind the correct data
     const tmpContent = [];
     for(
       let i = 0;
          (!count || (count && i < count))
-      && (!data || (data && i < data.length));
+      && (!data  || (data  && i < data.length));
       i++)
     {
       // clone children
       const tmpChildren = node.children.map(c => ({
         ...c,
-        attributes : {},
-        ...(data ? { innerScope : data[i] } : {}),
+        ...(data
+          ? {
+              innerScope : (typeof(data[i]) === 'object') ? { ...data[i] } : data[i]
+            }
+          : { }),
       }))
       // handle children content
       tmpChildren.forEach(childNode => processNode(childNode, json))
       tmpContent.push(joinContent(tmpChildren));
     }
-    node.content = tmpContent.join('');
 
+    node.content = tmpContent.join('');
   },
+  //
   if : (node, json) => {
-    console.log('processing if');
+    const { innerScope } = node;
     const { jsonPath, rawJson } = node.attributes;
     if(!jsonPath) {
       node.content = '';
       return;
     }
 
-    const values = rawJson || json;
+    const values = rawJson || innerScope || json;
     const jsonData = getDataFromJsonPath(jsonPath, values);
 
     if(!jsonData) {
@@ -346,7 +341,10 @@ const nodeProcessors = {
       return;
     }
 
-    node.children.forEach(childNode => processNode(childNode, json))
+    node.children.forEach(childNode => {
+      childNode.innerScope = { ...node.innerScope };
+      processNode(childNode, json);
+    })
     node.content = joinContent(node.children);
   },
 }
@@ -363,6 +361,113 @@ const nodeAttributes = {
   textContent : [  ],
 }
 
+// Splits a string into an array where special tags are on their own
+// can optionally only split it up based on a particular tag
+const splitContent = (content, tag) => {
+  let arr = [],
+      openNdx = -1,
+      closeNdx = -1,
+      partial = "",
+      startPattern = tag || '<!--#',
+      endPattern = '-->';
+
+  //prime the loop
+  openNdx = content.indexOf(startPattern);
+
+  if(openNdx === -1)
+    return [content];
+
+  while(openNdx > -1) {
+    partial = content.slice(0, openNdx);
+    if(partial)
+      arr.push(partial);
+
+    content = content.slice(openNdx);
+
+    // get the closeNdx despite inner open tags
+    // openNdx-><!-- <!-- --> <!-- <!-- --> --> --><-closeNdx
+    let closeNdx = getIndexOfClosingBrace(content, startPattern, endPattern);
+
+    partial = content.slice(0, closeNdx);
+    arr.push(partial);
+    content = content.slice(closeNdx);
+
+    // get ready for next iteration
+    openNdx = content.indexOf(startPattern);
+
+    // on final pass, push the remainer of the content string
+    if(openNdx === -1)
+      arr.push(content);
+  }
+
+  // Now we have an array of tags, and content
+  return arr;
+}
+
+// Given some content (starting with a tag) find the index after the matching end tag
+const getIndexOfClosingBrace = (content, startPattern, endPattern) => {
+  let tagDepth = 0;// when this gets to 0 we are done
+  let tmpContent = content.substr(1);
+
+
+  // prime loop by finding next start tag
+  let nextCloseNdx = tmpContent.indexOf(endPattern);
+  let nextOpenNdx = tmpContent.indexOf(startPattern);
+
+  if(nextCloseNdx ===  -1)
+    console.trace(`No Close tag for startPattern: ${startPattern} and endPattern: ${endPattern} and content: ${content}`);
+
+  // if there is a nextCloseNdx, but no openNdx, return the end of the tag.
+  if(nextOpenNdx === -1 || nextOpenNdx > nextCloseNdx)
+    return nextCloseNdx + 4; // 4 not 3 because we sliced off the '<' in content
+
+  // add 1 so we will search past the tag
+  nextOpenNdx += 1;
+  nextCloseNdx += 1;
+
+  // while current tag is not closed...
+  do {
+    let tmpOpen, tmpClosed;
+
+    // start tag is before close tag, then
+    // we can look to see if there is yet another tag nested between
+    if(nextOpenNdx > -1 && nextOpenNdx < nextCloseNdx) {
+      tmpOpen = tmpContent.substr(nextOpenNdx).indexOf(startPattern);
+      // see if we found something, and add this new index to our accumulator
+      if(tmpOpen > -1) {
+        // add 1 because we need next search to be beyond this tag
+        nextOpenNdx += tmpOpen + 2;
+        tagDepth += 1;
+      }
+      else
+        nextOpenNdx = -1;
+    }
+    else { // current close tag is before start tag
+      tmpClosed = tmpContent.substr(nextCloseNdx).indexOf(endPattern);
+      // see if we found something, and add this new index to our accumulator
+      if(tmpClosed > -1) {
+        // add 1 because we need next search to be beyond this tag
+        nextCloseNdx += tmpClosed + 1;
+        tagDepth -= 1;
+
+        if(tagDepth === 0)
+          return nextCloseNdx + 3;
+      }
+      else if(tagDepth > 0) {
+        console.error(`ERROR: there is an unclosed tag - content is ${content}`);
+        break;
+      }
+    }
+  } while(tagDepth > 0)
+
+  nextCloseNdx += 4;
+
+  if(nextCloseNdx === -1)
+    console.error(`ERROR: no closing tag! you are missing a '${endPattern}'`);
+
+  return nextCloseNdx;
+}
+
 // given a jsonObject and a path, return the data pointed at
 const getDataFromJsonPath = (jsonPath, json) => {
   if(jsonPath === 'this') return json;
@@ -375,6 +480,71 @@ const getDataFromJsonPath = (jsonPath, json) => {
   return result;
 }
 
+// are we on windows?
+const isWin = /^win/.test(process.platform);
+
+// overcome the difference in *nix/windows pathing
+const fixFilePathForOS = path =>
+  (isWin) ? path.replace(/\//g, '\\') : path.replace(/\\/g, '/')
+
+// given the current directory and a relative path, build the complete path
+// to the relative path
+const buildPathFromRelativePath = (cdir, fdir) => {
+  let dirChar = (isWin) ? '\\' : '/';
+  let dir = cdir.split(dirChar);
+  dir.pop();
+
+  fdir = fixFilePathForOS(fdir);
+
+  fdir.split(dirChar)
+    .forEach(function(e) {
+      (e === '..') ? dir.pop() : (e !== '.' && e !== '') ? dir.push(e) : void 0;
+    });
+  dir = dir.join(dirChar);
+
+  return dir;
+}
+
 //
 const toSafeJsonString = jsonObj =>
   JSON.stringify(jsonObj).replace(/\'/g, "\\'").replace(/"/g, "'")
+
+//
+const processRawJson = jsonString => {
+  if(typeof(jsonString) === 'object')
+    jsonString = toSafeJsonString(jsonString);
+
+  let jsonData = {};
+  try {
+    eval('jsonData = ' + jsonString);
+  }
+  catch(e) {
+    console.error(`ERROR: Poorly formatted rawJson string:
+      ${jsonString}
+      This must be valid JavaScript.
+    `);
+  }
+
+  return jsonData;
+}
+
+// does a tag have an attribute? (attributeName="value")
+const hasTagAttribute =
+  (attr, content) => content.indexOf(attr + '="') > -1
+
+// get the value of an attribute (attributeName="value")
+const getTagAttribute = (attr, content) => {
+  let fndx = -1,
+      lndx = -1;
+
+  fndx = content.indexOf(attr + '="');
+  if(fndx === -1) {
+    console.warn("Warning: no tag of name `" + attr + "` found in the following content: `" + content + "`")
+    return '';
+  }
+
+  content = content.slice(fndx + attr.length + 2);
+  lndx = content.indexOf('"');
+  content = content.slice(0, lndx);
+  return content;
+}
