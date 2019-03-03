@@ -28,8 +28,7 @@ const defaultNode = {
 
 // entry point for processing files
 export const buildAST = (file, json, parent, innerScope) => {
-  console.log('file.content')
-  console.log(file.content)
+
   // convert string into object
   const topNode = {
     ...defaultNode,
@@ -90,9 +89,9 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
       ...defaultNode,
       type,
       parent,
-      file    : parent.file,
-      innerScope : parent.innerScope,
-      originalContent: content,
+      file            : parent.file,
+      innerScope      : parent.innerScope,
+      originalContent : content,
       content,
     };
 
@@ -149,7 +148,6 @@ const loadNodeAttributes = node => {
   attrs.forEach(attr => {
     if(hasTagAttribute(attr, node.content)) {
       const value = getTagAttribute(attr, node.content);
-      if(attr === 'rawJson') console.log('attr: ', node.content);
       node.attributes[attr] = attr === 'rawJson' ? processRawJson(value) : value;
     }
   })
@@ -167,6 +165,7 @@ const findNodeType = content => (
 : 'textContent'
 )
 
+//
 const joinContent = nodeList => nodeList.map(c => c.content).join('')
 
 // the functions that processes each node
@@ -204,13 +203,13 @@ const nodeProcessors = {
 
     // set scope for inserted file
     const newInnerScope = (
-        rawJson    && jsonPath ? (console.log('1'),getDataFromJsonPath(jsonPath, rawJson))
-      : innerScope && jsonPath ? (console.log('2'),getDataFromJsonPath(jsonPath, innerScope))
+        rawJson    && jsonPath ? getDataFromJsonPath(jsonPath, rawJson)
+      : innerScope && jsonPath ? getDataFromJsonPath(jsonPath, innerScope)
       : rawJson  ? rawJson
       : jsonPath ? getDataFromJsonPath(jsonPath, json)
       : void(0)
     );
-    console.log('*** new inner scope: ', jsonPath, rawJson, innerScope);
+
     const insertNode = buildAST(insertFile, json, node, newInnerScope);
 
     // process contents to get children
@@ -248,7 +247,7 @@ const nodeProcessors = {
 
     // set scope for inserted file
     const newInnerScope = (
-        rawJson && jsonPath ? getDataFromJsonPath(jsonPath, rawJson)
+        rawJson    && jsonPath ? getDataFromJsonPath(jsonPath, rawJson)
       : innerScope && jsonPath ? getDataFromJsonPath(jsonPath, innerScope)
       : rawJson  ? rawJson
       : jsonPath ? getDataFromJsonPath(jsonPath, json)
@@ -276,6 +275,7 @@ const nodeProcessors = {
       return;
     }
     const values = rawJson || innerScope;
+    console.log('VALUES: ', values)
     const data = getDataFromJsonPath(jsonPath, values);
     node.content = data || defaultVal || '';
   },
@@ -292,6 +292,7 @@ const nodeProcessors = {
   },
   each : (node, json) => {
     console.log('processing each');
+    const { file } = node;
     const { count, jsonPath, rawJson } = node.attributes;
     if(!count && !jsonPath && !Array.isArray(rawJson)) {
       console.warn(`WARNING while processing file '${file.path}': each tag with attribute problems: count, jsonPath and rawJsonnot array`);
@@ -299,22 +300,17 @@ const nodeProcessors = {
       return;
     }
 
+    // determine what data we are using
     const values = rawJson || json;
     const jsonData = jsonPath ? getDataFromJsonPath(jsonPath, values) : void(0);
     const data = (
         Array.isArray(values)   ? values
-      : Array.isArray(jsonData) ? getDataFromJsonPath(jsonPath, jsonData)
+      : Array.isArray(jsonData) ? jsonData
       : void(0)
     );
 
-    if(!data) {
-      console.warn(`WARNING while processing file '${file.path}': each tag no data to iterate over`);
-      node.content = '';
-      return;
-    }
-
+    // build up nodes and bind the correct data
     const tmpContent = [];
-
     for(
       let i = 0;
          (!count || (count && i < count))
@@ -324,24 +320,34 @@ const nodeProcessors = {
       // clone children
       const tmpChildren = node.children.map(c => ({
         ...c,
+        attributes : {},
         ...(data ? { innerScope : data[i] } : {}),
       }))
       // handle children content
       tmpChildren.forEach(childNode => processNode(childNode, json))
       tmpContent.push(joinContent(tmpChildren));
     }
-
     node.content = tmpContent.join('');
 
   },
   if : (node, json) => {
     console.log('processing if');
-    const { count, jsonPath, rawJson } = node.attributes;
+    const { jsonPath, rawJson } = node.attributes;
     if(!jsonPath) {
       node.content = '';
       return;
     }
 
+    const values = rawJson || json;
+    const jsonData = getDataFromJsonPath(jsonPath, values);
+
+    if(!jsonData) {
+      node.content = '';
+      return;
+    }
+
+    node.children.forEach(childNode => processNode(childNode, json))
+    node.content = joinContent(node.children);
   },
 }
 
