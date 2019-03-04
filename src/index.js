@@ -5,18 +5,18 @@ module.exports = {
   initialize : options => setOptions(options),
   // puts files into hash maps
   hashFile : file => {
-    const f = File(file);
+    const f = formatFile(file);
 
     // removing clip right away does no damage and speeds up later processing
     processClip(f);
 
     configureFiles(f);
   },
-  // builds string
+  // map on page files and build them into strings
   buildFileResult : callback => pageFiles.map(file => {
-    const AST = processFile(file, options.jsonInput || {});
-    file.content = AST.content;
-    console.log(file.content);
+    const processedFile = processFile(file, options.jsonInput || {});
+    file.content = processedFile.content;
+
     file.processed = true;
 
     if(callback)
@@ -28,13 +28,12 @@ module.exports = {
 
 const isWin = /^win/.test(process.platform);
 
-function File(file) {
-  var f = {
-    name : '',
+const formatFile = file => {
+  let f = {
     path : file.path,
     content : file.contents.toString('utf8').trim(),
     processed : false,
-    file : file
+    file : file,
   };
 
   f.name = (isWin) ? file.path.split('\\') : file.path.split('/');
@@ -43,28 +42,20 @@ function File(file) {
   return f;
 }
 
-// <!--#clipbefore -->
-// <!--#clipafter -->
-// <!--#clipbetween -->
-// <!--#endclipbetween -->
 // This runs first, since all of the clipped areas will completely be removed
-function processClip(file) {
-  var tmp;
-
+const processClip = file => {
+  // process clipbefore and clipafter
   if(file.content.indexOf('<!--#clipbefore') > -1) {
-
     file.content = file.content
-            .split(/<!--#clipbefore\s*-->/)
-            .splice(1)[0]
-            .split('<!--#clipafter')
-            .splice(0,1)[0];
+      .split(/<!--#clipbefore\s*-->/)
+      .splice(1)[0]
+      .split('<!--#clipafter')
+      .splice(0,1)[0];
   }
 
+  // process clipbetween
   if(file.content.indexOf('<!--#clipbetween') > -1) {
-
-    tmp = file.content
-        .split(/<!--#clipbetween\s*-->/);
-
+    const tmp = file.content.split(/<!--#clipbetween\s*-->/);
     file.content = tmp[0] + tmp[1].split(/<!--#endclipbetween\s*-->/)[1];
   }
 }
