@@ -13,6 +13,14 @@ function genericHtmlIncluder(path) {
     .pipe(gulp.dest(paths.htmlBuild))
 }
 
+gulp.task('nested', function() {
+  genericHtmlIncluder([
+    './test/html/nestedTags.html',
+    './test/html/wrappers/*.html',
+    './test/html/components/*.html'
+  ])
+})
+
 gulp.task('broken', function() {
   genericHtmlIncluder([
     './test/html/broken.html',
