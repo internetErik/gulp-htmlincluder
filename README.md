@@ -83,7 +83,7 @@ Basic tag structure
 
 ### All Tags
 
-Note: '*' means required attribute
+Note: `*` means required attribute
 
 * Wrapping a file with another file
   * `<!--#wrap path="*" jsonPath="" rawJson="" -->`
@@ -387,15 +387,35 @@ Each can be used to iterate over a json array, or just to repeat some data a num
 
 #### Just with a count
 
-```
-<!--#each jsonPath="this" count="5" -->
+```html
+<!--#each count="5" -->
   <div>hello world</div>
 <!--#endeach -->
 ```
 
 Results:
+```html
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
+
+  <div>hello world</div>
 ```
 
+#### each over other tags
+
+```html
+<!--#each count="5" -->
+  <!--#insert path="./-insert-hello-world.html" -->
+<!--#endeach -->
+```
+
+Results:
+```html
   <div>hello world</div>
 
   <div>hello world</div>
@@ -405,28 +425,18 @@ Results:
   <div>hello world</div>
 
   <div>hello world</div>
-
-
 ```
 
 #### With an array of values in json input
 
-json input:
-```
-{
-  data : [1, 2, 3, 4]
-}
-```
-
-
-```
-<!--#each jsonPath="data" -->
+```html
+<!--#each jsonPath="data" rawJson="{ data : [1, 2, 3, 4] }" -->
   <div><!--#data --></div>
 <!--#endeach -->
 ```
 
-Results
-```
+Results:
+```html
 
   <div>1</div>
 
@@ -442,15 +452,14 @@ Results
 #### With an array of values
 
 
-```
-<!--#each jsonPath="this" rawJson="[1, 2, 3, 4]" -->
-  <div><!--#data --></div>
+```html
+<!--#each rawJson="[1, 2, 3, 4]" -->
+  <div><!--#data jsonPath="this" --></div>
 <!--#endeach -->
 ```
 
-Results
-```
-
+Results:
+```html
   <div>1</div>
 
   <div>2</div>
@@ -458,34 +467,29 @@ Results
   <div>3</div>
 
   <div>4</div>
-
-
 ```
 
-#### With an array of values, limited by count
+#### Array limited by count
 
 
-```
+```html
 <!--#each jsonPath="this" rawJson="[1, 2, 3, 4]" count="2" -->
-  <div><!--#data --></div>
+  <div><!--#data jsonPath="this" --></div>
 <!--#endeach -->
 ```
 
-Results
-```
-
+Results:
+```html
   <div>1</div>
 
   <div>2</div>
-
-
 ```
 
 #### With an array of objects
 
 **note: use single quotes in json objects, which means you'll need to escape**
 
-```
+```html
 <!--#each jsonPath="this" rawJson="[
     { name: 'Tom', age: 33, bio: 'Bio for Tom' },
     { name: 'Dick', age: 55, bio: 'Dick\'s bio' },
@@ -499,8 +503,7 @@ Results
 ```
 
 Results:
-```
-
+```html
   <div>name: Tom</div>
   <div>age: 33</div>
   <div>bio: Bio for Tom</div>
@@ -516,8 +519,6 @@ Results:
   <div>name: Harry</div>
   <div>age: 27</div>
   <div>bio: nothing is known about them</div>
-
-
 ```
 
 ### Clip tops and bottoms off of files
@@ -586,10 +587,11 @@ something else
 
 ## More Complicated Examples
 
+Look in `./test/html`
+
 ## ToDo
 
-* Support arbitrarily nested tagging (e.g., <!--# <!--# --> -->)
-* Rewrite more recursively so the code is more managable and so extensible
+* Build out more tests - consider more automated versions of them
 * Implement some form of caching so only changed files need be processed
 
 ## License

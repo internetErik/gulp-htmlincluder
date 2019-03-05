@@ -27,6 +27,13 @@ Loop through some data and print it
   <div><!--#data jsonPath="num" --></div>
 <!--#endeach -->
 
+<!--#if jsonPath="check" rawJson="{ check : true }" -->
+  <div>Using array with no jsonPath</div>
+  <!--#each rawJson="[1,'two',3,4,5,6]" -->
+    <div><!--#data jsonPath="this" --></div>
+  <!--#endeach -->
+<!--#endif -->
+
 <!--#each
   jsonPath="arr"
   rawJson="{
@@ -64,3 +71,14 @@ Loop through some data and print it
     ],
   }"
 -->
+
+<!--#each jsonPath="this" rawJson="[
+    { name: 'Tom', age: 33, bio: 'Bio for Tom' },
+    { name: 'Dick', age: 55, bio: 'Dick\'s bio' },
+    { name: 'Jane', age: 28, bio: 'Bio for Jane' },
+    { name: 'Harry', age: 27 },
+  ]" -->
+  <div>name: <!--#data jsonPath="name" --></div>
+  <div>age: <!--#data jsonPath="age" --></div>
+  <div>bio: <!--#data jsonPath="bio" default="nothing is known about them" --></div>
+<!--#endeach -->

@@ -380,24 +380,24 @@ const nodeAttributes = {
 }
 
 const getTagPositions = (tag, content, lndx = 0, ndx = content.indexOf(tag)) => (
-(ndx === -1)
-    ? []
-    : [ ndx + lndx, ...getTagPositions(tag, content.slice(ndx + 1), lndx + ndx + 1) ]
+  (ndx === -1)
+? []
+: [ ndx + lndx, ...getTagPositions(tag, content.slice(ndx + 1), lndx + ndx + 1) ]
 )
 
 const buildTagPairs = (open, close) => (
     (open.length === 0) ? []
   : (open.length === 1 || open[1] > close[0]) ? [[open.slice(0, 1)[0], close.slice(0, 1)[0]], ...buildTagPairs(open.slice(1), close.slice(1))]
-  : [...buildTagPairs([...open.slice(0,1), ...open.slice(2)], close.slice(1))]
+  : [ ...buildTagPairs([...open.slice(0,1), ...open.slice(2)], close.slice(1)) ]
 )
 
 const divideContent = (content, [start, end], pairs, cursor = 0) => (
-(start === void(0))
-  ? [content.slice(cursor)]
-  : [
+  (start === void(0))
+? [ content.slice(cursor) ]
+: [
     content.slice(cursor, start),
     content.slice(start, end+3),
-    ...divideContent(content, pairs.shift() || [], pairs, end+3)
+    ...divideContent(content, pairs.shift() || [], pairs, end+3),
   ]
 )
 
@@ -473,8 +473,7 @@ const processRawJson = jsonString => {
 }
 
 // does a tag have an attribute? (attributeName="value")
-const hasTagAttribute =
-  (attr, content) => content.indexOf(attr + '="') > -1
+const hasTagAttribute = (attr, content) => content.indexOf(attr + '="') > -1
 
 // get the value of an attribute (attributeName="value")
 const getTagAttribute = (attr, content) => {
