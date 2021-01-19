@@ -130,18 +130,18 @@ const resolveNode = (node, json) => {
   }
 
   // load and resolve attribute values
-  node.attributes = loadNodeAttributes(node);
+  node.attributes = loadNodeAttributes(node, json);
 
   return processor(node, json);
 }
 
 // loads values for tags into node object
-const loadNodeAttributes = node => {
+const loadNodeAttributes = (node, json) => {
   const attrs = nodeAttributes[node.type] || [];
   return attrs.reduce((acc, attr) => {
     if(hasTagAttribute(attr, node.content)) {
       const value = getTagAttribute(attr, node.content);
-      acc[attr] = (attr === 'rawJson') ? processRawJson(value) : value;
+      acc[attr] = (attr === 'rawJson') ? processRawJson(value, json) : value;
     }
     return acc;
   }, {})
@@ -454,7 +454,7 @@ const toSafeJsonString = jsonObj =>
   JSON.stringify(jsonObj).replace(/\'/g, "\\'").replace(/"/g, "'")
 
 //
-const processRawJson = jsonString => {
+const processRawJson = (jsonString, json) => {
   if(typeof(jsonString) === 'object')
     jsonString = toSafeJsonString(jsonString);
 

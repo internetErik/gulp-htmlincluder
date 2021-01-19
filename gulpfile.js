@@ -1,4 +1,4 @@
-var gulp = require('gulp');
+const { src, dest, watch, series } = require('gulp');
 var includer = require('./index');
 
 var paths = {
@@ -7,75 +7,90 @@ var paths = {
 }
 
 function genericHtmlIncluder(path) {
-  const jsonInput = {};
-  gulp.src(path)
-    .pipe(includer({ jsonInput }))
-    .pipe(gulp.dest(paths.htmlBuild))
+  const jsonInput = { heading : 'hello world' };
+  src(path)
+  .pipe(includer({ jsonInput }))
+  .pipe(dest(paths.htmlBuild))
 }
 
-gulp.task('nested', function() {
+exports.nested = function(cb) {
   genericHtmlIncluder([
     './test/html/nestedTags.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('broken', function() {
+exports.broken = function(cb) {
   genericHtmlIncluder([
     './test/html/broken.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('simple', function() {
+exports.simple = function(cb) {
   genericHtmlIncluder([
     './test/html/simple.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('clipping', function() {
+exports.clipping = function(cb) {
   genericHtmlIncluder([
     './test/html/clipping.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('complex', function() {
+exports.complex = function(cb) {
   genericHtmlIncluder([
     './test/html/complex.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('if', function() {
+exports.if = function(cb) {
   genericHtmlIncluder([
     './test/html/if.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('each', function() {
+exports.each = function(cb) {
   genericHtmlIncluder([
     './test/html/each.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
-})
+  cb();
+}
 
-gulp.task('default', function() {
+exports.rawJsonFunction = function(cb) {
+  genericHtmlIncluder([
+    './test/html/raw-json-function.html',
+    './test/html/components/*.html',
+  ])
+  cb();
+}
+
+exports.default = function(cb) {
   let options = {
     jsonInput: {
       message: 'test message'
     }
   };
-  gulp.src(paths.html)
-    .pipe(includer(options))
-    .pipe(gulp.dest(paths.htmlBuild))
-});
+  src(paths.html)
+  .pipe(includer(options))
+  .pipe(gulp.dest(paths.htmlBuild))
+}
