@@ -1,7 +1,6 @@
 <!--#data
   jsonPath="heading"
   rawJson="(function(j){
-    console.log(j);
     return { heading: j.heading.split('').reverse().join('') }
   })(json)"
 -->
@@ -9,7 +8,6 @@
 <!--#insert
   path="./components/-base-component.html"
   rawJson="(function(j){
-    console.log(j);
     return { inheritedProperty: j.heading.split('').reverse().join('') }
   })(json)"
 -->

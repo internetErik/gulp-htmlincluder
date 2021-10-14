@@ -1,5 +1,5 @@
-import { configureFiles, setOptions, pageFiles, options } from './config';
-import { processFile } from './parse';
+import { configureFiles, setOptions, pageFiles, options } from './config.mjs';
+import { processFile } from './parse.mjs';
 
 module.exports = {
   initialize : options => setOptions(options),

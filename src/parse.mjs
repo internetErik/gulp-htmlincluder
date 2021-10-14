@@ -6,7 +6,7 @@ import {
   options,
   devOptions,
   insertPattern,
-} from './config';
+} from './config.mjs';
 
 // shape of our AST nodes
 const getDefaultNode = () => ({
@@ -465,8 +465,11 @@ const processRawJson = (jsonString, json) => {
   catch(e) {
     console.error(`ERROR: Poorly formatted rawJson string:
       ${jsonString}
-      This must be valid JavaScript.
+      - This must be valid JavaScript.
+      - Or perhaps there was an error in a function used for rawJson?
+      Stack trace:
     `);
+    console.error(e);
   }
 
   return jsonData;

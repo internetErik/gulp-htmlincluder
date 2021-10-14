@@ -1,8 +1,7 @@
 const webpack = require('webpack');
-const env = 'production';
+
 let config = {
-  mode: (env === 'dev') ? 'development' : 'production',
-  entry: './src/index.js',
+  entry: './src/index.mjs',
   target: 'node',
   output: {
     path: __dirname + '/lib',

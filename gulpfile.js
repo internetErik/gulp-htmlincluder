@@ -87,10 +87,12 @@ exports.rawJsonFunction = function(cb) {
 exports.default = function(cb) {
   let options = {
     jsonInput: {
-      message: 'test message'
+      message : 'test message',
+      heading : 'hello world',
     }
   };
   src(paths.html)
   .pipe(includer(options))
-  .pipe(gulp.dest(paths.htmlBuild))
+  .pipe(dest(paths.htmlBuild))
+  cb();
 }
