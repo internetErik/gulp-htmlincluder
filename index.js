@@ -1,5 +1,5 @@
 var through = require("through2"),
-		gutil = require("gulp-util"),
+		PluginError = require('plugin-error');
 		includer = require("./lib/htmlincluder");
 
 // @options = (optional) options for configuring htmlIncluder
@@ -44,7 +44,7 @@ module.exports = function (options) {
 
 		if (file.isStream()) {
 			this.emit("error",
-				new gutil.PluginError("gulp-htmlincluder", "Stream content is not supported"));
+				new PluginError("gulp-htmlincluder", "Stream content is not supported"));
 			return callback();
 		}
 
