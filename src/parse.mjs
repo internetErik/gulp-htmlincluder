@@ -313,12 +313,14 @@ const nodeProcessors = {
     // determine what data we are using
     const values = rawJson || node.innerScope || json;
     const jsonData = jsonPath ? getDataFromJsonPath(jsonPath, values) : void(0);
+    // prefer local data to data in passed in jsonObject
     const data = (
         Array.isArray(values)   ? values
       : Array.isArray(jsonData) ? jsonData
       : void(0)
     );
 
+    // if there is nothing to loop on, then content is empty
     if(!data && !count) {
       node.content = '';
       return node;
@@ -338,10 +340,10 @@ const nodeProcessors = {
         ...(c.nestedNodes ? { nestedNodes : c.nestedNodes} : { }),
         ...(c.children    ? { children : c.children } : { }),
         ...(data
-          // ? { innerScope : (typeof(data[i]) === 'object') ? { ...data[i] } : data[i] }
-          ? { innerScope : data[i] }
-          : { }
-        ),
+              // ? { innerScope : (typeof(data[i]) === 'object') ? { ...data[i] } : data[i] }
+              ? { innerScope : data[i] }
+              : { }
+           ),
       }))
       // handle children content
       const promises = tmpChildren.map(async (childNode) => await processNode(childNode, json))

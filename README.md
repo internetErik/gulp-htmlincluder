@@ -10,7 +10,7 @@ This allows you to insert a special markup into your files to do a number of thi
 * wrap a file with another file
 * clip off certain parts of a file
 * inject data for use in adding text to files
-* basic control flow (if and each)
+* basic control flow (if and each) to use with data
 
 ## What to use this for?
 
@@ -97,11 +97,11 @@ Files that you want to wrap around other files begin with `_`.
 
 Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
 
-Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built). Would love a pull request trying this since I'm not sure I'll get around to it soon.
+Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built).
 
 ## Includer Tags
 
-It is probably best to learn from examples. These can be found in the `./test` folder of this repository. These can be run by cloning this repository, running `npm install` and then `npx gulp`. Check the `gulpfile.js` for specifics if you just want to try building single files.
+It is probably best to learn from examples. These can be found in the `./test/html` folder of this repository. These can be run by cloning this repository, running `npm install` and then `npx gulp`. Check the `gulpfile.js` for specifics if you just want to try building single files.
 
 ### Terminology
 
@@ -145,13 +145,14 @@ A relative (to current file) path to a file.
 Example:
 ```
 src
-|- paths
-|  |- -insert.html
+|- components
+|  |- -header.html
 |- index.html
 ```
 
-in `index.html` the `path` for `-insert.html` is:
+in `index.html` the `path` for `-header.html` is:
 
+`<!--#tagName path="./components/-header.html" -->`
 
 #### jsonPath
 
@@ -207,7 +208,6 @@ On an #each you can tell it how many times to repeat the inner content with a co
 
 `<!--#each count="3" -->hello world<!--#endeach -->`
 
-
 ### Insert
 
 This is the simplest use case.  Simply put the following html comment
@@ -251,7 +251,7 @@ Results:
 
 #### Configure insert to use other text
 
-If you want to use ssi includes along with this, and so have the insert string follow that format there is an arguemtn to pass into the htmlincluder in gulp.
+If you want to use ssi includes along with this, and so have the insert string follow that format there is an argument to pass into the htmlincluder in gulp.
 
 Thanks to theSLY for suggesting this!
 
