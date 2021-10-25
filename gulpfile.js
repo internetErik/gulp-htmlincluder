@@ -1,14 +1,14 @@
 const { src, dest, watch, series } = require('gulp');
 const includer = require('./index');
 
-const http = require('http');
-
+// const http = require('http');
 const getApiData = url => new Promise((resolve, reject) => {
-  http.get(url, resp => {
-    let data = '';
-    resp.on('data', chunk => data += chunk)
-    resp.on('end', () => resolve(JSON.parse(data)))
-  })
+  // http.get(url, resp => {
+  //   let data = '';
+  //   resp.on('data', chunk => data += chunk)
+  //   resp.on('end', () => resolve(JSON.parse(data)))
+  // })
+  resolve({ heading : 'This is async heading copy', bodyCopy : 'this is async body copy' })
 })
 
 const paths = {
