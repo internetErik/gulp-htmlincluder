@@ -82,3 +82,16 @@ Loop through some data and print it
   <div>age: <!--#data jsonPath="age" --></div>
   <div>bio: <!--#data jsonPath="bio" default="nothing is known about them" --></div>
 <!--#endeach -->
+
+<!--#each jsonPath="this" rawJson="(async (j) =>
+    await Promise.resolve([
+    { name: 'aTom', age: 33, bio: 'Bio for Tom' },
+    { name: 'aDick', age: 55, bio: 'Dick\'s bio' },
+    { name: 'aJane', age: 28, bio: 'Bio for Jane' },
+    { name: 'aHarry', age: 27 },
+  ])
+  )(json)" -->
+  <div>async name: <!--#data jsonPath="name" --></div>
+  <div>async age: <!--#data jsonPath="age" --></div>
+  <div>async bio: <!--#data jsonPath="bio" default="nothing is known about them" --></div>
+<!--#endeach -->

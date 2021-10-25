@@ -12,19 +12,24 @@ module.exports = {
 
     configureFiles(f);
   },
+
   // map on page files and build them into strings
-  buildFileResult : callback => pageFiles.map(file => {
-    const processedFile = processFile(file, options.jsonInput || {});
-    file.content = processedFile.content;
+  buildFileResult : async (callback) => {
+    await pageFiles.forEach(async (file) => {
+      await processFile(file, options.jsonInput || {})
+      .then(processedFile => {
 
-    file.processed = true;
+        file.content = processedFile.content;
 
-    if(callback)
-      callback(file);
+        file.processed = true;
 
-    return file;
-  }),
-};
+        if(callback) {
+          callback(file);
+        }
+      })
+    })
+  },
+}
 
 const isWin = /^win/.test(process.platform);
 

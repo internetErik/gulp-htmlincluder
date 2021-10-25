@@ -10,7 +10,7 @@ Otherwise, sends node to `processNode`
 
 ## `processNode`
 
-Builds up nested nodes (both nested tags and chidlren)
+Builds up nested nodes (both nested tags and children)
 
 * Ignores nodes that are of type `textContent`
 * Splits up content of node (`splitContent`)
@@ -28,7 +28,7 @@ Builds up nested nodes (both nested tags and chidlren)
     * if you found it, then return (dropping close tag - which is unnecessary)
   * creates node
   * if a node that has an end tag
-    * call buildNodes again and seek close tag
+    * call `buildNodes` again and seek close tag
   * insert created node into result list
 * return result list
 

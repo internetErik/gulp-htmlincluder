@@ -20,3 +20,10 @@
 <!--#endif -->
 
 <!--#insert rawJson="{ check : true }" path="./components/-if.html" -->
+
+<!--#if
+  jsonPath="test"
+  rawJson="(async (json) => { return Promise.resolve({ test : true })})(json)"
+-->
+  ASYNC! <!--#insert path="./components/-text-insert.html" -->
+<!--#endif -->

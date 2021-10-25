@@ -5,54 +5,80 @@
 
 ## What does this do?
 
-At it's most basic level, this allows you to build files out of other files by marking up your files in a particular way. It also lets you insert data into these files from a json object provided from outside.
+This allows you to insert a special markup into your files to do a number of things:
+* insert files into other files
+* wrap a file with another file
+* clip off certain parts of a file
+* inject data for use in adding text to files
+* basic control flow (if and each)
 
-## What was this intended to do?
+## What to use this for?
 
-htmlincluder was written with the intention of working on static websites while still allowing for a component based development. It also was intended to let the individual components be testable by themselves by allowing the individual component files to include portions that would be removed on build.
+This was written with the intention of working on static websites while still allowing for a component based development. It also was intended to let the individual components be testable by themselves by allowing the individual component files to include portions that would be removed on build.
 
 It also can allow the inclusion of some dynamic content into these static sites, as long as you can wrangle said content into a json object and pass it in when you are building.
 
 I'm sure this can be put to a much broader use than originally intended (and may do for a name change at some point, since there is no reason you couldn't include json files into json files, or do other things.)
 
-## Usage
+## A Brief Warning
 
-### Install
+Certain features use `eval`. I have flagged these features below, but please use caution when using them so that you don't have any untrusted data that isn't unsanitized going into the system. It could lead to compromising the build environment or XSS attacks in the resulting html.
+
+## Install and Setup
+
 
 ```shell
-npm install --save-dev gulp-htmlincluder
+npm install --save-dev gulp gulp-htmlincluder
 ```
 
-### Sample `gulpfile.js`
+`gulpfile.js` (Using gulp 4):
 
-Then, add it to your `gulpfile.js`:
+```javascript
+const { src, dest } = require('gulp');
+const includer = require('gulp-htmlincluder');
+
+// A simple method for making basic api requests.
+const http = require('http');
+const getApiData = url => new Promise((resolve, reject) => {
+  http.get(url, resp => {
+    let data = '';
+    resp.on('data', chunk => data += chunk)
+    resp.on('end', () => resolve(JSON.parse(data)))
+  })
+})
+
+exports.includer = function(path) {
+  // optional use of json data. options object is not required
+  const jsonInput = require('./input-file.json');
+  const rawJsonPlugins = { getApiData };
+  src('./src/**/*.html')
+  .pipe(includer({ jsonInput, rawJsonPlugins }))
+  .pipe(dest('./dist/'))
+}
+
+```
+
+you can then run this with `gulp includer`
+
+`gulpfile.js` (using earlier versions of gulp):
+
 
 ```javascript
 var gulp = require('gulp'),
 	includer = require('gulp-htmlincluder');
 
 gulp.task('htmlIncluder', function() {
-  gulp.src('files/*.html')
-    .pipe(includer())
-      .pipe(gulp.dest('dist/'));
-});
-
-// and example using a json data file
-gulp.task('htmlIncluderJson', function() {
+  // optional use of json data. options object is not required
   var json = require('./input-file.json');
   var options = {
-    jsonInput    : json,
+    jsonInput : json,
   };
-
-  gulp.src('files/*.html')
+  gulp.src('./src/**/*.html')
     .pipe(includer(options))
-    .pipe(gulp.dest('dist/'));
+    .pipe(gulp.dest('./dist/'));
 });
 
-
 gulp.task('default', ['htmlIncluder']);
-
-gulp.task('includeJson', ['htmlIncluderJson']);
 
 gulp.task('watch', function() {
   gulp.watch(['files/*.html'], function(event) {
@@ -61,9 +87,7 @@ gulp.task('watch', function() {
 });
 ```
 
-## API
-
-### *File Naming Requirement*
+## *File Naming Requirement*
 
 htmlincluder *requires* files follow a particular naming convention.
 
@@ -74,6 +98,10 @@ Files that you want to wrap around other files begin with `_`.
 Files that you want to use to build the resulting static pages can be named however you want, as long as they don't begin with `-` or `_`.
 
 Right now this is necessary because the files that will ultimately exist in the build folder are those that don't start with `-` or `_`. I'd love to change this to determine this in another manner (for example, only files that aren't included are finally built). Would love a pull request trying this since I'm not sure I'll get around to it soon.
+
+## Includer Tags
+
+It is probably best to learn from examples. These can be found in the `./test` folder of this repository. These can be run by cloning this repository, running `npm install` and then `npx gulp`. Check the `gulpfile.js` for specifics if you just want to try building single files.
 
 ### Terminology
 
@@ -87,7 +115,7 @@ Note: `*` means required attribute
 
 * Wrapping a file with another file
   * `<!--#wrap path="*" jsonPath="" rawJson="" -->`
-  * `<!--#middle -->` <-- the wrapped file gets inserted here
+  * `<!--#middle -->` <-- content wrapped replaces the `middle` tag
   * `<!--#endwrap -->`
 * Inserting a file
   * `<!--#insert path="*" jsonPath="" rawJson="" -->`
@@ -114,9 +142,22 @@ Note: `*` means required attribute
 
 A relative (to current file) path to a file.
 
+Example:
+```
+src
+|- paths
+|  |- -insert.html
+|- index.html
+```
+
+in `index.html` the `path` for `-insert.html` is:
+
+
 #### jsonPath
 
-A path to data in a json object. For example:
+A path to data in a json object.
+
+Example:
 
 ```
 {
@@ -128,19 +169,37 @@ A path to data in a json object. For example:
 }
 ```
 
-The path to `c` is `a.b.c`.
+The path to `c` is:
 
-#### rawJson
+`<!--#tagName jsonPath="a.b.c" -->`
 
-A string that contains a json object.
+#### rawJson *(uses `eval`)*
+
+A string that, when converted to JavaScript and executed, produces a json object. You can access this data using your jsonPath attribute.
+
+For example:
+
+`rawJson="{ sample : 'this is some data to use!' }"`
+
+You can pass in a self-invoking function you can invoke this function with the arguments `json` and/or `plugins`.
+
+`rawJson="((json, {}) => ({ title: 'generated object?'}))(json, plugins)"`
+
+`json` represents the json object that you may pass in to the options for htmlincluder when invoking it in your gulp task. `plugins`
+
+It would even be possible to use an async function to load data from a service or CMS:
+
+`rawJson="(async ({ fetch }) => { const response = await fetch('https://cms.com/api'); return response.json(); })(plugins)"`
 
 *Warning*
 
 Internally `eval` is used so beware. But also, you could technically write a script that generates an object if you need more complicated data.
 
-For example:
+Of course, if you're loading data from an api it could be compromised. If it contains something like:
 
-`rawJson="(function(){ return {title: 'generated object?'} })()"`
+`<script>console.log('gotcha')</script>`
+
+You may have compromised your users. So beware!
 
 #### count
 
@@ -176,7 +235,7 @@ This is the simplest use case.  Simply put the following html comment
   hello world
 ```
 
-Results
+Results:
 ```html
 <!doctype html>
 <html lang="en">
@@ -585,7 +644,7 @@ something else
 </html>
 ```
 
-## More Complicated Examples
+## More Examples
 
 Look in `./test/html`
 

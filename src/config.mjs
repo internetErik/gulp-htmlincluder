@@ -7,6 +7,7 @@ export let devOptions = {};
 export let insertPattern;
 export let filePathAttribute;
 export let jsonPathAttribute;
+export let rawJsonPlugins;
 
 export const configureFiles = file => {
   if(file.name[0] === '_')
@@ -25,6 +26,7 @@ export const configureFiles = file => {
 //          and #wrap (default= 'path')
 // options.jsonPathAttribute = the name used for the file pathing for #insert
 //          , #wrap, #data, #jsonInsert (default= 'jsonPath')
+// options.rawJsonPlugins = list of functions passed in to be used in processRawJson call
 //
 //
 // options.dev.limitIterations = the number of times processFileWithJsonInput will loop
@@ -47,4 +49,8 @@ export const setOptions = ops => {
   jsonPathAttribute = (options.jsonPathAttribute)
     ? options.jsonPathAttribute
     : 'jsonPath';
+
+  rawJsonPlugins = (options.rawJsonPlugins)
+  ? options.rawJsonPlugins
+  : {};
 }

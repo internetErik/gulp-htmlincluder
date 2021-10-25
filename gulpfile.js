@@ -1,30 +1,32 @@
 const { src, dest, watch, series } = require('gulp');
-var includer = require('./index');
+const includer = require('./index');
 
-var paths = {
+const http = require('http');
+
+const getApiData = url => new Promise((resolve, reject) => {
+  http.get(url, resp => {
+    let data = '';
+    resp.on('data', chunk => data += chunk)
+    resp.on('end', () => resolve(JSON.parse(data)))
+  })
+})
+
+const paths = {
   html: './test/html/**/*.html',
   htmlBuild: './test/html-built',
 }
 
 function genericHtmlIncluder(path) {
   const jsonInput = { heading : 'hello world' };
+  const rawJsonPlugins = { getApiData };
   src(path)
-  .pipe(includer({ jsonInput }))
+  .pipe(includer({ jsonInput, rawJsonPlugins }))
   .pipe(dest(paths.htmlBuild))
 }
 
 exports.nested = function(cb) {
   genericHtmlIncluder([
     './test/html/nestedTags.html',
-    './test/html/wrappers/*.html',
-    './test/html/components/*.html'
-  ])
-  cb();
-}
-
-exports.broken = function(cb) {
-  genericHtmlIncluder([
-    './test/html/broken.html',
     './test/html/wrappers/*.html',
     './test/html/components/*.html'
   ])
@@ -84,12 +86,23 @@ exports.rawJsonFunction = function(cb) {
   cb();
 }
 
+exports.rawJsonAsyncFunction = function(cb) {
+  genericHtmlIncluder([
+    './test/html/raw-json-async-function.html',
+    './test/html/components/*.html',
+  ])
+  cb();
+}
+
 exports.default = function(cb) {
   let options = {
     jsonInput: {
       message : 'test message',
       heading : 'hello world',
-    }
+    },
+    rawJsonPlugins : {
+      getApiData,
+    },
   };
   src(paths.html)
   .pipe(includer(options))

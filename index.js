@@ -1,4 +1,4 @@
-var through = require("through2"),
+const through = require("through2"),
 		gutil = require("gulp-util"),
 		includer = require("./lib/htmlincluder");
 
@@ -19,16 +19,16 @@ var through = require("through2"),
 //
 module.exports = function (options) {
 	"use strict";
-	var that;
+	let that;
 
 	includer.initialize(options);
 
 	function htmlincluder() {
-		includer.buildFileResult(function(file) {
-			var f = file.file;
-			f.contents = Buffer.from(file.content);
+		includer.buildFileResult(file => {
+			const f = file.file;
 
-    		that.push(f);
+			f.contents = Buffer.from(file.content);
+			that.push(f);
 		});
 	}
 

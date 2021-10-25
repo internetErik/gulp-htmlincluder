@@ -1,0 +1,12 @@
+<h1>
+<!--#data
+  jsonPath="heading"
+  rawJson="(async (j, { getApiData }) => await getApiData('http://localhost:3000/api/test').then(r => r))(json, plugins)"
+-->
+</h1>
+<!--#insert
+  path="./components/-base-component.html"
+  rawJson="(async (j, { getApiData }) => {
+    return ({ inheritedProperty : await getApiData('http://localhost:3000/api/test').then(r => r.bodyCopy) })
+  })(json, plugins)"
+-->

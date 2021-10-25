@@ -1,3 +1,4 @@
+import 'babel-polyfill';
 import {
   jsonPathAttribute,
   filePathAttribute,
@@ -6,6 +7,7 @@ import {
   options,
   devOptions,
   insertPattern,
+  rawJsonPlugins,
 } from './config.mjs';
 
 // shape of our AST nodes
@@ -22,7 +24,7 @@ const getDefaultNode = () => ({
 })
 
 // entry point for processing files
-export const processFile = (file, json, parent, innerScope) => {
+export const processFile = async (file, json, parent, innerScope) => {
   // convert string into object
   const topNode = {
     ...getDefaultNode(),
@@ -36,16 +38,16 @@ export const processFile = (file, json, parent, innerScope) => {
 
   // don't do work if there are no tags in the file
   if(topNode.originalContent.indexOf('<!--#') === -1)
-    return topNode;
+    return await topNode;
 
   // process children of the node
-  processNode(topNode, json);
+  await processNode(topNode, json);
 
-  return topNode;
+  return await topNode;
 }
 
 //
-const processNode = (node, json) => {
+const processNode = async (node, json) => {
   if(node.type === 'textContent') return node;
 
   // the contents of a node may contain more nested nodes
@@ -55,7 +57,9 @@ const processNode = (node, json) => {
   // convert array of strings to nodes
   node.nestedNodes = buildNodes(node, contentArr, json);
 
-  return resolveNode(node, json);
+  node = await resolveNode(node, json);
+
+  return node;
 }
 
 //
@@ -113,11 +117,13 @@ const buildNodes = (parent, contentArr, json, closeTag) => {
 }
 
 //
-const resolveNode = (node, json) => {
+const resolveNode = async (node, json) => {
   // resolve nested tags
   if(node.nestedNodes.length > 0) {
-    node.nestedNodes.forEach(node => processNode(node, json));
-    node.content = joinContent(node.nestedNodes);
+    const promises = node.nestedNodes.map(async (node) => await processNode(node, json));
+    await Promise.all(promises).then(() => {
+      node.content = joinContent(node.nestedNodes);
+    })
   }
 
   // process node so that content is resolved
@@ -130,21 +136,24 @@ const resolveNode = (node, json) => {
   }
 
   // load and resolve attribute values
-  node.attributes = loadNodeAttributes(node, json);
+  node.attributes = await loadNodeAttributes(node, json);
 
-  return processor(node, json);
+  return await processor(node, json);
 }
 
 // loads values for tags into node object
-const loadNodeAttributes = (node, json) => {
+const loadNodeAttributes = async (node, json) => {
   const attrs = nodeAttributes[node.type] || [];
-  return attrs.reduce((acc, attr) => {
+  const attributes = await attrs.reduce(async (acc, attr) => {
+    acc = await acc;
     if(hasTagAttribute(attr, node.content)) {
       const value = getTagAttribute(attr, node.content);
-      acc[attr] = (attr === 'rawJson') ? processRawJson(value, json) : value;
+      acc[attr] = (attr === 'rawJson') ? (await processRawJson(value, json)) : value;
     }
     return acc;
   }, {})
+
+  return attributes;
 }
 
 // check for tag and return node type
@@ -176,7 +185,7 @@ const nodeProcessors = {
     return node;
   },
   //
-  insert : (node, json) => {
+  insert : async (node, json) => {
     const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
@@ -207,14 +216,14 @@ const nodeProcessors = {
       : void(0)
     );
 
-    const insertNode = processFile(insertFile, json, node, newInnerScope);
+    const insertNode = await processFile(insertFile, json, node, newInnerScope);
 
     // process contents to get children
     node.content = insertNode.content;
     return node;
   },
   //
-  wrap : (node, json) => {
+  wrap : async (node, json) => {
     const { file, innerScope } = node;
     const { path, jsonPath, rawJson } = node.attributes;
     if(!path) {
@@ -236,7 +245,8 @@ const nodeProcessors = {
     // we need to process the children before we bring in the file
 
     // handle children content
-    node.children = node.children.map(childNode => processNode(childNode, json))
+    const promises = node.children.map(async (childNode) => await processNode(childNode, json))
+    node.children = await Promise.all(promises).then(children => children);
     node.content = joinContent(node.children);
 
     // load contents from file
@@ -251,7 +261,7 @@ const nodeProcessors = {
       : void(0)
     );
 
-    const wrapNode = processFile(wrapFile, json, node, newInnerScope);
+    const wrapNode = await processFile(wrapFile, json, node, newInnerScope);
 
     // process contents to get children
     node.content = wrapNode.content;
@@ -291,7 +301,7 @@ const nodeProcessors = {
     return node;
   },
   //
-  each : (node, json) => {
+  each : async (node, json) => {
     const { file, innerScope } = node;
     const { count, jsonPath, rawJson } = node.attributes;
     if(!count && !jsonPath && !Array.isArray(rawJson) && !Array.isArray(innerScope)) {
@@ -334,7 +344,8 @@ const nodeProcessors = {
         ),
       }))
       // handle children content
-      tmpChildren = tmpChildren.map(childNode => processNode(childNode, json))
+      const promises = tmpChildren.map(async (childNode) => await processNode(childNode, json))
+      tmpChildren = await Promise.all(promises).then(children => children);
       tmpContent.push(joinContent(tmpChildren));
     }
 
@@ -342,7 +353,7 @@ const nodeProcessors = {
     return node;
   },
   //
-  if : (node, json) => {
+  if : async (node, json) => {
     const { innerScope } = node;
     const { jsonPath, rawJson } = node.attributes;
     if(!jsonPath) {
@@ -356,12 +367,13 @@ const nodeProcessors = {
       node.content = '';
       return node;
     }
-    node.children = node.children.map(childNode => {
-      return processNode({
+    const promises = node.children.map(async (childNode) =>
+      await processNode({
         ...childNode,
         innerScope : { ...node.innerScope }
-      }, json);
-    })
+      }, json)
+    )
+    node.children = await Promise.all(promises).then(children => children);
     node.content = joinContent(node.children);
     return node;
   },
@@ -454,13 +466,14 @@ const toSafeJsonString = jsonObj =>
   JSON.stringify(jsonObj).replace(/\'/g, "\\'").replace(/"/g, "'")
 
 //
-const processRawJson = (jsonString, json) => {
+const processRawJson = async (jsonString, json) => {
   if(typeof(jsonString) === 'object')
     jsonString = toSafeJsonString(jsonString);
 
   let jsonData = {};
+  const plugins = rawJsonPlugins;
   try {
-    eval('jsonData = ' + jsonString);
+    jsonData = await eval(`(async () => await ${ jsonString })()`);
   }
   catch(e) {
     console.error(`ERROR: Poorly formatted rawJson string:
