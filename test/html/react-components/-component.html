@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<!-- The react libraries needed -->
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.js" crossorigin></script>
+<!--#clipbefore -->
+<div id="component"></div>
+
+<!-- handle exports and require -->
+<script>
+  window.exports = window;
+  // Whenever a component has an import, add it here and
+  // then load the file as a dependency below
+  // You must do the same thing as sub dependencies
+  // ToDo: This could potentially be done in a babel plugin
+  function require(module) {
+    if (module === 'react') return React;
+    if (module === "react-dom") return ReactDOM;
+    if (module === './test') return Test;
+  }
+</script>
+<!-- Load dependencies of component -->
+<!-- <script type="text/babel" src="test.js"></script> -->
+<!-- Load component -->
+<script type="text/babel" src="../../js/components/component.js"></script>
+
+<!-- render our component -->
+<script type="text/babel">
+  ReactDOM.render(<Component />, document.querySelector('#component'));
+</script>
+<!--#clipafter -->
+</body>
+</html>

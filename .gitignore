@@ -4,3 +4,4 @@ temp/
 coverage
 
 test/html-built
+test/js-built

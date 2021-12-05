@@ -1,5 +1,6 @@
 const { src, dest, watch, series } = require('gulp');
 const includer = require('./index');
+const babel = require('gulp-babel');
 
 // const http = require('http');
 const getApiData = url => new Promise((resolve, reject) => {
@@ -14,7 +15,23 @@ const getApiData = url => new Promise((resolve, reject) => {
 const paths = {
   html: './test/html/**/*.html',
   htmlBuild: './test/html-built',
+  js : './test/js/index.js',
+  jsBuild : './test/html-built/js-built',
 }
+
+function js(cb) {
+  src(paths.js)
+  .pipe(babel({
+    presets: [
+      '@babel/preset-env',
+      { modules : false },
+      '@babel/preset-react'
+    ],
+  }))
+  .pipe(dest(paths.jsBuild))
+  cb();
+}
+exports.js = js;
 
 function genericHtmlIncluder(path) {
   const jsonInput = { heading : 'hello world' };
@@ -93,6 +110,16 @@ exports.rawJsonAsyncFunction = function(cb) {
   ])
   cb();
 }
+
+exports.react = series(
+  function reactHTML(cb) {
+    genericHtmlIncluder([
+      './test/html/react.html',
+    ]);
+    cb();
+  },
+  js,
+);
 
 exports.default = function(cb) {
   let options = {
