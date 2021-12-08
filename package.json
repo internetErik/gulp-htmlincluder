@@ -18,7 +18,11 @@
     "url": "git://github.com/internetErik/gulp-htmlincluder.git"
   },
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "build": "webpack --mode=development"
+  },
+  "resolutions": {
+    "glob-parent": "^6.0.1"
   },
   "dependencies": {
     "natives": "^1.1.6",
