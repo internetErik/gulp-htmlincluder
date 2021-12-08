@@ -1,4 +1,4 @@
-const { src, dest, watch, series } = require('gulp');
+const { src, dest, watch, series, parallel } = require('gulp');
 const includer = require('./index');
 const babel = require('gulp-babel');
 
@@ -15,23 +15,9 @@ const getApiData = url => new Promise((resolve, reject) => {
 const paths = {
   html: './test/html/**/*.html',
   htmlBuild: './test/html-built',
-  js : './test/js/index.js',
-  jsBuild : './test/html-built/js-built',
+  jsReact : './test/js-react/index.js',
+  jsReactBuild : './test/html-built/js-react-built',
 }
-
-function js(cb) {
-  src(paths.js)
-  .pipe(babel({
-    presets: [
-      '@babel/preset-env',
-      { modules : false },
-      '@babel/preset-react'
-    ],
-  }))
-  .pipe(dest(paths.jsBuild))
-  cb();
-}
-exports.js = js;
 
 function genericHtmlIncluder(path) {
   const jsonInput = { heading : 'hello world' };
@@ -111,15 +97,32 @@ exports.rawJsonAsyncFunction = function(cb) {
   cb();
 }
 
-exports.react = series(
-  function reactHTML(cb) {
-    genericHtmlIncluder([
-      './test/html/react.html',
-    ]);
-    cb();
-  },
-  js,
-);
+
+// This is for building react components that are used to test
+// including individual react components in case you wanted to use this to generate
+// style guides with react components
+// to use this, you need to install npm install react and react-dom
+function jsReact(cb) {
+  src(paths.jsReact)
+    .pipe(babel({
+      presets: [
+        '@babel/preset-env',
+        { modules: false },
+        '@babel/preset-react'
+      ],
+    }))
+    .pipe(dest(paths.jsReactBuild))
+  cb();
+}
+
+function htmlReact(cb) {
+  genericHtmlIncluder([
+    './test/html/react.html',
+  ]);
+  cb();
+}
+
+exports.react = parallel(htmlReact, jsReact);
 
 exports.default = function(cb) {
   let options = {
